@@ -99,3 +99,7 @@ require (
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/blugelabs/bluge v0.1.9 => ../../blugelabs/bluge
+
+replace github.com/blugelabs/ice v0.2.0 => ../../blugelabs/ice
