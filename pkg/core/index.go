@@ -111,7 +111,7 @@ func (index *Index) BuildBlugeDocumentFromJSON(docID string, doc map[string]inte
 	}
 	docByteVal, _ := json.Marshal(doc)
 	bdoc.AddField(bluge.NewDateTimeField("@timestamp", timestamp).StoreValue().Sortable().Aggregatable())
-	// bdoc.AddField(bluge.NewStoredOnlyField("_index", []byte(index.Name)))
+	bdoc.AddField(bluge.NewStoredOnlyField("_index", []byte(index.Name)))
 	bdoc.AddField(bluge.NewStoredOnlyField("_source", docByteVal))
 	bdoc.AddField(bluge.NewCompositeFieldExcluding("_all", []string{"_index", "_id", "_source", "@timestamp"}))
 
