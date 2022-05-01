@@ -49,7 +49,7 @@ func main() {
 		if err == http.ErrServerClosed {
 			log.Info().Msgf("Server closed under request")
 		} else {
-			log.Fatal().Msgf("Server closed unexpect")
+			log.Fatal().Msgf("Server closed unexpect %s", err.Error())
 		}
 	}
 
