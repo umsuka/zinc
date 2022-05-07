@@ -10,12 +10,6 @@ import (
 	meta "github.com/zinclabs/zinc/pkg/meta/v2"
 )
 
-const (
-	_ = iota
-	NotCompatibleNewIndexMeta
-	UseNewIndexMeta
-)
-
 var ZINC_INDEX_LIST map[string]*Index
 var ZINC_SYSTEM_INDEX_LIST map[string]*Index
 

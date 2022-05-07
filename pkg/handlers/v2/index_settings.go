@@ -72,7 +72,7 @@ func UpdateIndexSettings(c *gin.Context) {
 	if analyzers != nil {
 		defaultSearchAnalyzer = analyzers["default"]
 	}
-	index, err = core.NewIndex(indexName, newIndex.StorageType, core.UseNewIndexMeta, defaultSearchAnalyzer)
+	index, err = core.NewIndex(indexName, newIndex.StorageType, defaultSearchAnalyzer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

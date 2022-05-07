@@ -96,6 +96,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/blugelabs/bluge v0.1.9 => github.com/zinclabs/bluge v0.0.0-20220504042233-53fd9dd17b46
+// replace github.com/blugelabs/bluge v0.1.9 => github.com/zinclabs/bluge v0.0.0-20220504042233-53fd9dd17b46
+// replace github.com/blugelabs/ice v0.2.0 => github.com/zinclabs/ice v0.0.0-20220504041539-ace50a7ef71f
 
-replace github.com/blugelabs/ice v0.2.0 => github.com/zinclabs/ice v0.0.0-20220504041539-ace50a7ef71f
+replace github.com/blugelabs/bluge v0.1.9 => ../bluge
+
+replace github.com/blugelabs/ice v0.2.0 => ../ice
+
+replace github.com/blugelabs/bluge_segment_api v0.2.0 => ../bluge_segment_api

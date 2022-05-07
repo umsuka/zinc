@@ -25,7 +25,7 @@ func TestLoadIndexes(t *testing.T) {
 				index.Writer.Close()
 			}
 			var err error
-			ZINC_INDEX_LIST, err = LoadZincIndexesFromDisk()
+			ZINC_INDEX_LIST, err = LoadZincIndexesFromMeta()
 			So(err, ShouldBeNil)
 			So(len(ZINC_INDEX_LIST), ShouldBeGreaterThanOrEqualTo, 0)
 		})

@@ -12,7 +12,6 @@ import (
 	"github.com/blugelabs/bluge"
 	"github.com/blugelabs/bluge/analysis"
 	"github.com/goccy/go-json"
-	"github.com/rs/zerolog/log"
 
 	meta "github.com/zinclabs/zinc/pkg/meta/v2"
 	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
@@ -250,66 +249,6 @@ func (index *Index) SetMappings(mappings *meta.Mappings) error {
 	return nil
 }
 
-// DEPRECATED GetStoredMapping returns the mappings of all the indexes from _index_mapping system index
-func (index *Index) GetStoredMapping() (*meta.Mappings, error) {
-	log.Error().Bool("deprecated", true).Msg("GetStoredMapping is deprecated, use index.CachedMappings instead")
-	for _, indexName := range systemIndexList {
-		if index.Name == indexName {
-			return nil, nil
-		}
-	}
-
-	reader, _ := ZINC_SYSTEM_INDEX_LIST["_index_mapping"].Writer.Reader()
-	defer reader.Close()
-
-	// search for the index mapping _index_mapping index
-	query := bluge.NewTermQuery(index.Name).SetField("_id")
-	searchRequest := bluge.NewTopNSearch(1, query) // Should get just 1 result at max
-	dmi, err := reader.Search(context.Background(), searchRequest)
-	if err != nil {
-		log.Error().Str("index", index.Name).Msg("error executing search: " + err.Error())
-		return nil, err
-	}
-
-	next, err := dmi.Next()
-	if err != nil {
-		return nil, err
-	}
-
-	mappings := new(meta.Mappings)
-	oldMappings := make(map[string]string)
-	if next != nil {
-		err = next.VisitStoredFields(func(field string, value []byte) bool {
-			switch field {
-			case "_source":
-				if string(value) != "" {
-					json.Unmarshal(value, mappings)
-				}
-			default:
-				oldMappings[field] = string(value)
-			}
-			return true
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// compatible old mappings format
-	if len(mappings.Properties) == 0 && len(oldMappings) > 0 {
-		mappings.Properties = make(map[string]meta.Property, len(oldMappings))
-		for k, v := range oldMappings {
-			mappings.Properties[k] = meta.NewProperty(v)
-		}
-	}
-
-	if len(mappings.Properties) == 0 {
-		mappings.Properties = make(map[string]meta.Property)
-	}
-
-	return mappings, nil
-}
-
 func (index *Index) LoadDocsCount() (int64, error) {
 	query := bluge.NewMatchAllQuery()
 	searchRequest := bluge.NewTopNSearch(0, query).WithStandardAggregations()
@@ -337,6 +276,7 @@ func (index *Index) LoadStorageSize() float64 {
 		return math.Round(size)
 	}
 }
+
 func (index *Index) ReLoadStorageSize() {
 	if index.StorageSizeNextTime.After(time.Now()) {
 		return // skip
