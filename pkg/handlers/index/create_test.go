@@ -35,6 +35,13 @@ func TestCreateIndexWorker(t *testing.T) {
 		wantErr bool
 	}{
 		// TODO: Add test cases.
+		// 1. create index simple
+		// 2. create index with mappings
+		// 3. create index with settings
+		// 4. create index with mappings and settings
+		// 5. create index use template
+		// 6. create index without index name
+		// 7. create index with error settings
 		{
 			name: "test1",
 			args: args{

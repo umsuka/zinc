@@ -32,6 +32,11 @@ func TestBulkWorker(t *testing.T) {
 
 	rc := strings.NewReader("")
 
+	// TODO add more test units:
+	// 1. with delete
+	// 2. check total num after bulk
+	// 3. add error unit, without index, or without _id
+
 	type args struct {
 		target string
 		body   *strings.Reader
