@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package document
 
 import (
 	"net/http"
@@ -24,9 +24,9 @@ import (
 	"github.com/zinclabs/zinc/pkg/ider"
 )
 
-func UpdateDocument(c *gin.Context) {
+func CreateUpdate(c *gin.Context) {
 	indexName := c.Param("target")
-	queryID := c.Param("id") // ID for the document to be updated provided in URL path
+	docID := c.Param("id") // ID for the document to be updated provided in URL path
 
 	var err error
 	var doc map[string]interface{}
@@ -35,14 +35,11 @@ func UpdateDocument(c *gin.Context) {
 		return
 	}
 
-	docID := ""
 	mintedID := false
 
 	// If id field is present then use it, else create a new UUID and use it
 	if id, ok := doc["_id"]; ok {
 		docID = id.(string)
-	} else if queryID != "" {
-		docID = queryID
 	}
 	if docID == "" {
 		docID = ider.Generate()
@@ -52,7 +49,8 @@ func UpdateDocument(c *gin.Context) {
 	// If the index does not exist, then create it
 	index, exists := core.GetIndex(indexName)
 	if !exists {
-		index, err = core.NewIndex(indexName, "disk", nil) // Create a new index with disk storage as default
+		// Create a new index with disk storage as default
+		index, err = core.NewIndex(indexName, "disk", nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package index
 
 import (
 	"net/http"
@@ -24,7 +24,7 @@ import (
 	meta "github.com/zinclabs/zinc/pkg/meta/v2"
 )
 
-func ListIndexes(c *gin.Context) {
+func List(c *gin.Context) {
 	items := make(meta.SortIndex, 0, len(core.ZINC_INDEX_LIST))
 	for name, value := range core.ZINC_INDEX_LIST {
 		item := new(meta.Index)

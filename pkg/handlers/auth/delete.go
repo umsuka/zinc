@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package auth
 
 import (
 	"net/http"
@@ -23,11 +23,6 @@ import (
 	"github.com/zinclabs/zinc/pkg/auth"
 )
 
-func GetUsers(c *gin.Context) {
-	res, err := auth.GetAllUsersWorker()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, res)
+func Delete(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": auth.DeleteUser(c.Param("id"))})
 }

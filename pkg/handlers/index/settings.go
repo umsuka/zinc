@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package v2
+package index
 
 import (
 	"net/http"
@@ -26,7 +26,7 @@ import (
 	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
 )
 
-func GetIndexSettings(c *gin.Context) {
+func GetSettings(c *gin.Context) {
 	indexName := c.Param("target")
 	index, exists := core.GetIndex(indexName)
 	if !exists {
@@ -42,7 +42,7 @@ func GetIndexSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{index.Name: gin.H{"settings": settings}})
 }
 
-func UpdateIndexSettings(c *gin.Context) {
+func SetSettings(c *gin.Context) {
 	indexName := c.Param("target")
 	if indexName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "index.name should be not empty"})

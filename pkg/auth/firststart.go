@@ -16,9 +16,9 @@
 package auth
 
 import (
-	"github.com/rs/zerolog/log"
+	"os"
 
-	"github.com/zinclabs/zinc/pkg/zutils"
+	"github.com/rs/zerolog/log"
 )
 
 var ZINC_CACHED_USERS map[string]SimpleUser
@@ -33,8 +33,12 @@ func init() {
 	}
 	if firstStart {
 		// create default user from environment variable
-		adminUser := zutils.GetEnv("ZINC_FIRST_ADMIN_USER", "admin")
-		adminPassword := zutils.GetEnv("ZINC_FIRST_ADMIN_PASSWORD", "Complexpass#123")
+		adminUser := os.Getenv("ZINC_FIRST_ADMIN_USER")
+		adminPassword := os.Getenv("ZINC_FIRST_ADMIN_PASSWORD")
+
+		if adminUser == "" || adminPassword == "" {
+			log.Fatal().Msg("ZINC_FIRST_ADMIN_USER and ZINC_FIRST_ADMIN_PASSWORD must be set on first start. You should also change the credentials after first login.")
+		}
 		CreateUser(adminUser, adminUser, adminPassword, "admin")
 	}
 }

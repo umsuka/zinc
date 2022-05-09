@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package v2
+package index
 
 import (
 	"net/http"
@@ -25,7 +25,7 @@ import (
 	"github.com/zinclabs/zinc/pkg/uquery/v2/mappings"
 )
 
-func GetIndexMapping(c *gin.Context) {
+func GetMapping(c *gin.Context) {
 	indexName := c.Param("target")
 	index, exists := core.GetIndex(indexName)
 	if !exists {
@@ -42,7 +42,7 @@ func GetIndexMapping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{index.Name: gin.H{"mappings": mappings}})
 }
 
-func UpdateIndexMapping(c *gin.Context) {
+func SetMapping(c *gin.Context) {
 	indexName := c.Param("target")
 	if indexName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "index.name should be not empty"})

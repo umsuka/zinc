@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package index
 
 import (
 	"errors"
@@ -28,7 +28,7 @@ import (
 	"github.com/zinclabs/zinc/pkg/uquery/v2/mappings"
 )
 
-func CreateIndex(c *gin.Context) {
+func Create(c *gin.Context) {
 	var newIndex core.Index
 	if err := c.BindJSON(&newIndex); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

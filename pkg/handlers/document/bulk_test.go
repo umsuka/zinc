@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package document
 
 import (
 	"io"
@@ -21,9 +21,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/zinclabs/zinc/pkg/core"
 )
 
-func TestBulkHandlerWorker(t *testing.T) {
+func TestBulkWorker(t *testing.T) {
 	input := `{ "index" : { "_index" : "olympics" } } 
 	{"Year": 1896, "City": "Athens", "Sport": "Aquatics", "Discipline": "Swimming", "Athlete": "HAJOS, Alfred", "Country": "HUN", "Gender": "Men", "Event": "100M Freestyle", "Medal": "Gold", "Season": "summer"}
 	{ "index" : { "_index" : "olympics" } } 
@@ -52,11 +54,13 @@ func TestBulkHandlerWorker(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BulkHandlerWorker(tt.args.target, tt.args.body)
+			got, err := BulkWorker(tt.args.target, tt.args.body)
 			assert.Nil(t, err)
 			assert.Equal(t, len(got.Items), 2)
 			assert.Equal(t, got.Items[0]["index"].Status, 200)
 			assert.Equal(t, got.Items[1]["index"].Status, 200)
 		})
 	}
+
+	core.DeleteIndex("olympics")
 }

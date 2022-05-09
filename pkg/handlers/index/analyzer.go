@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package v2
+package index
 
 import (
 	"fmt"
@@ -23,6 +23,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/zinclabs/zinc/pkg/core"
+	"github.com/zinclabs/zinc/pkg/errors"
 	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
@@ -80,7 +81,7 @@ func Analyze(c *gin.Context) {
 
 	charFilters, err := parseCharFilter(query.CharFilter)
 	if err != nil {
-		handleError(c, err)
+		errors.HandleError(c, err)
 		return
 	}
 
@@ -90,13 +91,13 @@ func Analyze(c *gin.Context) {
 	}
 	tokenFilters, err := parseTokenFilter(query.TokenFilter)
 	if err != nil {
-		handleError(c, err)
+		errors.HandleError(c, err)
 		return
 	}
 
 	tokenizers, err := parseTokenizer(query.Tokenizer)
 	if err != nil {
-		handleError(c, err)
+		errors.HandleError(c, err)
 		return
 	}
 

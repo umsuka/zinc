@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package v2
+package index
 
 import (
 	"net/http"
@@ -24,7 +24,7 @@ import (
 	"github.com/zinclabs/zinc/pkg/uquery/v2/template"
 )
 
-func ListIndexTemplate(c *gin.Context) {
+func ListTemplate(c *gin.Context) {
 	pattern := c.Query("pattern")
 	templates, err := core.ListTemplates(pattern)
 	if err != nil {
@@ -35,7 +35,26 @@ func ListIndexTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, templates)
 }
 
-func UpdateIndexTemplate(c *gin.Context) {
+func GetTemplate(c *gin.Context) {
+	name := c.Param("target")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "template.name should be not empty"})
+		return
+	}
+	template, exists, err := core.LoadTemplate(name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "template " + name + " does not exists"})
+		return
+	}
+
+	c.JSON(http.StatusOK, template)
+}
+
+func UpdateTemplate(c *gin.Context) {
 	name := c.Param("target")
 	if name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "template.name should be not empty"})
@@ -65,26 +84,7 @@ func UpdateIndexTemplate(c *gin.Context) {
 	})
 }
 
-func GetIndexTemplate(c *gin.Context) {
-	name := c.Param("target")
-	if name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "template.name should be not empty"})
-		return
-	}
-	template, exists, err := core.LoadTemplate(name)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "template " + name + " does not exists"})
-		return
-	}
-
-	c.JSON(http.StatusOK, template)
-}
-
-func DeleteIndexTemplate(c *gin.Context) {
+func DeleteTemplate(c *gin.Context) {
 	name := c.Param("target")
 	err := core.DeleteTemplate(name)
 	if err != nil {

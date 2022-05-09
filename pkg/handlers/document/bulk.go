@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package document
 
 import (
 	"bufio"
@@ -33,10 +33,10 @@ import (
 	"github.com/zinclabs/zinc/pkg/startup"
 )
 
-func BulkHandler(c *gin.Context) {
+func Bulk(c *gin.Context) {
 	target := c.Param("target")
 
-	ret, err := BulkHandlerWorker(target, c.Request.Body)
+	ret, err := BulkWorker(target, c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,11 +44,11 @@ func BulkHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "bulk data inserted", "record_count": ret.Count})
 }
 
-func ESBulkHandler(c *gin.Context) {
+func ESBulk(c *gin.Context) {
 	target := c.Param("target")
 
 	startTime := time.Now()
-	ret, err := BulkHandlerWorker(target, c.Request.Body)
+	ret, err := BulkWorker(target, c.Request.Body)
 	ret.Took = int(time.Since(startTime) / time.Millisecond)
 	if err != nil {
 		ret.Error = err.Error()
@@ -56,7 +56,7 @@ func ESBulkHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func BulkHandlerWorker(target string, body io.ReadCloser) (*BulkResponse, error) {
+func BulkWorker(target string, body io.ReadCloser) (*BulkResponse, error) {
 	bulkRes := &BulkResponse{Items: []map[string]*BulkResponseItem{}}
 
 	// Prepare to read the entire raw text of the body

@@ -11,7 +11,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package core
 
@@ -333,7 +333,6 @@ func (index *Index) LoadDocsCount() (int64, error) {
 
 func (index *Index) LoadStorageSize() float64 {
 	size := 0.0
-
 	switch index.StorageType {
 	case "s3":
 		return size // TODO: implement later
@@ -346,6 +345,7 @@ func (index *Index) LoadStorageSize() float64 {
 		return math.Round(size)
 	}
 }
+
 func (index *Index) ReLoadStorageSize() {
 	if index.StorageSizeNextTime.After(time.Now()) {
 		return // skip

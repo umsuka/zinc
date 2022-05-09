@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package handlers
+package index
 
 import (
 	"context"
@@ -32,8 +32,8 @@ import (
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
 
-// DeleteIndex deletes a zinc index and its associated data. Be careful using thus as you ca't undo this action.
-func DeleteIndex(c *gin.Context) {
+// Delete deletes a zinc index and its associated data. Be careful using thus as you ca't undo this action.
+func Delete(c *gin.Context) {
 	indexName := c.Param("target")
 
 	// 0. Check if index exists and Get the index storage type - disk, s3 or memory

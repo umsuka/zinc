@@ -26,8 +26,10 @@ import (
 
 	"github.com/zinclabs/zinc"
 	"github.com/zinclabs/zinc/pkg/core"
-	"github.com/zinclabs/zinc/pkg/handlers"
-	handlersV2 "github.com/zinclabs/zinc/pkg/handlers/v2"
+	"github.com/zinclabs/zinc/pkg/handlers/auth"
+	"github.com/zinclabs/zinc/pkg/handlers/document"
+	"github.com/zinclabs/zinc/pkg/handlers/index"
+	"github.com/zinclabs/zinc/pkg/handlers/search"
 	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
 )
 
@@ -57,6 +59,7 @@ func SetRoutes(r *gin.Engine) {
 		log.Err(err)
 	}
 
+	// UI
 	HTTPCacheForUI(r)
 	r.StaticFS("/ui/", http.FS(front))
 	r.NoRoute(func(c *gin.Context) {
@@ -74,36 +77,35 @@ func SetRoutes(r *gin.Engine) {
 		}
 	})
 
-	r.POST("/api/login", handlers.ValidateCredentials)
+	// auth
+	r.POST("/api/login", auth.Login)
+	r.PUT("/api/user", AuthMiddleware, auth.CreateUpdate)
+	r.DELETE("/api/user/:id", AuthMiddleware, auth.Delete)
+	r.GET("/api/user", AuthMiddleware, auth.List)
 
-	r.PUT("/api/user", AuthMiddleware, handlers.CreateUpdateUser)
-	r.DELETE("/api/user/:userID", AuthMiddleware, handlers.DeleteUser)
-	r.GET("/api/users", AuthMiddleware, handlers.GetUsers)
+	// index
+	r.GET("/api/index", AuthMiddleware, index.List)
+	r.PUT("/api/index", AuthMiddleware, index.Create)
+	r.DELETE("/api/index/:target", AuthMiddleware, index.Delete)
+	// index settings
+	r.GET("/api/:target/_mapping", AuthMiddleware, index.GetMapping)
+	r.PUT("/api/:target/_mapping", AuthMiddleware, index.SetMapping)
+	r.GET("/api/:target/_settings", AuthMiddleware, index.GetSettings)
+	r.PUT("/api/:target/_settings", AuthMiddleware, index.SetSettings)
+	r.POST("/api/:target/_analyze", AuthMiddleware, index.Analyze)
+	r.POST("/api/_analyze", AuthMiddleware, index.Analyze)
 
-	r.GET("/api/index", AuthMiddleware, handlers.ListIndexes)
-	r.PUT("/api/index", AuthMiddleware, handlers.CreateIndex)
-	r.PUT("/api/index/:target", AuthMiddleware, handlers.CreateIndex)
-	r.DELETE("/api/index/:target", AuthMiddleware, handlers.DeleteIndex)
+	// document
 
-	// Bulk update/insert
-	r.POST("/api/_bulk", AuthMiddleware, handlers.BulkHandler)
-	r.POST("/api/:target/_bulk", AuthMiddleware, handlers.BulkHandler)
-
+	// Document Bulk update/insert
+	r.POST("/api/_bulk", AuthMiddleware, document.Bulk)
 	// Document CRUD APIs. Update is same as create.
-	r.PUT("/api/:target/document", AuthMiddleware, handlers.UpdateDocument)
-	r.POST("/api/:target/_doc", AuthMiddleware, handlers.UpdateDocument)
-	r.PUT("/api/:target/_doc/:id", AuthMiddleware, handlers.UpdateDocument)
-	r.POST("/api/:target/_search", AuthMiddleware, handlers.SearchIndex)
-	r.DELETE("/api/:target/_doc/:id", AuthMiddleware, handlers.DeleteDocument)
+	r.PUT("/api/:target/_doc", AuthMiddleware, document.CreateUpdate)
+	r.PUT("/api/:target/_doc/:id", AuthMiddleware, document.CreateUpdate)
+	r.DELETE("/api/:target/_doc/:id", AuthMiddleware, document.Delete)
 
-	r.GET("/api/:target/_mapping", AuthMiddleware, handlersV2.GetIndexMapping)
-	r.PUT("/api/:target/_mapping", AuthMiddleware, handlersV2.UpdateIndexMapping)
-
-	r.GET("/api/:target/_settings", AuthMiddleware, handlersV2.GetIndexSettings)
-	r.PUT("/api/:target/_settings", AuthMiddleware, handlersV2.UpdateIndexSettings)
-
-	r.POST("/api/_analyze", AuthMiddleware, handlersV2.Analyze)
-	r.POST("/api/:target/_analyze", AuthMiddleware, handlersV2.Analyze)
+	// search
+	r.POST("/api/:target/_search", AuthMiddleware, search.Search)
 
 	/**
 	 * elastic compatible APIs
@@ -119,34 +121,34 @@ func SetRoutes(r *gin.Engine) {
 		c.JSON(http.StatusOK, v1.NewESXPack(c))
 	})
 
-	r.POST("/es/_search", AuthMiddleware, handlersV2.SearchIndex)
-	r.POST("/es/:target/_search", AuthMiddleware, handlersV2.SearchIndex)
+	r.POST("/es/_search", AuthMiddleware, search.SearchDSL)
+	r.POST("/es/:target/_search", AuthMiddleware, search.SearchDSL)
 
-	r.GET("/es/_index_template", AuthMiddleware, handlersV2.ListIndexTemplate)
-	r.PUT("/es/_index_template/:target", AuthMiddleware, handlersV2.UpdateIndexTemplate)
-	r.GET("/es/_index_template/:target", AuthMiddleware, handlersV2.GetIndexTemplate)
-	r.HEAD("/es/_index_template/:target", AuthMiddleware, handlersV2.GetIndexTemplate)
-	r.DELETE("/es/_index_template/:target", AuthMiddleware, handlersV2.DeleteIndexTemplate)
+	r.GET("/es/_index_template", AuthMiddleware, index.ListTemplate)
+	r.PUT("/es/_index_template/:target", AuthMiddleware, index.UpdateTemplate)
+	r.GET("/es/_index_template/:target", AuthMiddleware, index.GetTemplate)
+	r.HEAD("/es/_index_template/:target", AuthMiddleware, index.GetTemplate)
+	r.DELETE("/es/_index_template/:target", AuthMiddleware, index.DeleteTemplate)
 
-	r.GET("/es/:target/_mapping", AuthMiddleware, handlersV2.GetIndexMapping)
-	r.PUT("/es/:target/_mapping", AuthMiddleware, handlersV2.UpdateIndexMapping)
+	r.GET("/es/:target/_mapping", AuthMiddleware, index.GetMapping)
+	r.PUT("/es/:target/_mapping", AuthMiddleware, index.SetMapping)
 
-	r.GET("/es/:target/_settings", AuthMiddleware, handlersV2.GetIndexSettings)
-	r.PUT("/es/:target/_settings", AuthMiddleware, handlersV2.UpdateIndexSettings)
+	r.GET("/es/:target/_settings", AuthMiddleware, index.GetSettings)
+	r.PUT("/es/:target/_settings", AuthMiddleware, index.SetSettings)
 
-	r.POST("/es/_analyze", AuthMiddleware, handlersV2.Analyze)
-	r.POST("/es/:target/_analyze", AuthMiddleware, handlersV2.Analyze)
+	r.POST("/es/_analyze", AuthMiddleware, index.Analyze)
+	r.POST("/es/:target/_analyze", AuthMiddleware, index.Analyze)
 
-	r.POST("/es/:target/_doc", AuthMiddleware, handlers.UpdateDocument)
-	r.PUT("/es/:target/_doc/:id", AuthMiddleware, handlers.UpdateDocument)
-	r.PUT("/es/:target/_create/:id", AuthMiddleware, handlers.UpdateDocument)
-	r.POST("/es/:target/_create/:id", AuthMiddleware, handlers.UpdateDocument)
-	r.POST("/es/:target/_update/:id", AuthMiddleware, handlers.UpdateDocument)
-	r.DELETE("/es/:target/_doc/:id", AuthMiddleware, handlers.DeleteDocument)
-
-	// Bulk update/insert
-	r.POST("/es/_bulk", AuthMiddleware, handlers.ESBulkHandler)
-	r.POST("/es/:target/_bulk", AuthMiddleware, handlers.ESBulkHandler)
+	// ES Bulk update/insert
+	r.POST("/es/_bulk", AuthMiddleware, document.ESBulk)
+	r.POST("/es/:target/_bulk", AuthMiddleware, document.ESBulk)
+	// ES Document
+	r.POST("/es/:target/_doc", AuthMiddleware, document.CreateUpdate)
+	r.PUT("/es/:target/_doc/:id", AuthMiddleware, document.CreateUpdate)
+	r.PUT("/es/:target/_create/:id", AuthMiddleware, document.CreateUpdate)
+	r.POST("/es/:target/_create/:id", AuthMiddleware, document.CreateUpdate)
+	r.POST("/es/:target/_update/:id", AuthMiddleware, document.CreateUpdate)
+	r.DELETE("/es/:target/_doc/:id", AuthMiddleware, document.Delete)
 
 	core.Telemetry.Instance()
 	core.Telemetry.Event("server_start", nil)

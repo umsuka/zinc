@@ -13,26 +13,23 @@
 * limitations under the License.
  */
 
-package handlers
+package errors
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/zinclabs/zinc/pkg/auth"
 )
 
-func ValidateCredentials(c *gin.Context) {
-	var user auth.ZincUser
-	if err := c.BindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+func HandleError(c *gin.Context, err error) {
+	if err != nil {
+		switch v := err.(type) {
+		case *Error:
+			c.JSON(http.StatusBadRequest, gin.H{"error": v})
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": v.Error()})
+		}
 		return
 	}
-
-	loggedInUser, validationResult := auth.VerifyCredentials(user.ID, user.Password)
-	c.JSON(http.StatusOK, gin.H{
-		"validated": validationResult,
-		"user":      loggedInUser,
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }

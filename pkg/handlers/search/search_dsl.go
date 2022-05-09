@@ -13,7 +13,7 @@
 * limitations under the License.
  */
 
-package v2
+package search
 
 import (
 	"net/http"
@@ -27,13 +27,13 @@ import (
 	meta "github.com/zinclabs/zinc/pkg/meta/v2"
 )
 
-// SearchIndex searches the index for the given http request from end user
-func SearchIndex(c *gin.Context) {
+// SearchDSL searches the index for the given http request from end user
+func SearchDSL(c *gin.Context) {
 	indexName := c.Param("target")
 
 	query := new(meta.ZincQuery)
 	if err := c.BindJSON(query); err != nil {
-		log.Printf("handlers.v2.SearchIndex: %s", err.Error())
+		log.Printf("handlers.search.searchDSL: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -58,7 +58,7 @@ func SearchIndex(c *gin.Context) {
 	}
 
 	if err != nil {
-		handleError(c, err)
+		errors.HandleError(c, err)
 		return
 	}
 
@@ -71,17 +71,4 @@ func SearchIndex(c *gin.Context) {
 	core.Telemetry.Event("search", eventData)
 
 	c.JSON(http.StatusOK, resp)
-}
-
-func handleError(c *gin.Context, err error) {
-	if err != nil {
-		switch v := err.(type) {
-		case *errors.Error:
-			c.JSON(http.StatusBadRequest, gin.H{"error": v})
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{"error": v.Error()})
-		}
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
