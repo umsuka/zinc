@@ -16,7 +16,6 @@
 package document
 
 import (
-	"io"
 	"strings"
 	"testing"
 
@@ -31,12 +30,11 @@ func TestBulkWorker(t *testing.T) {
 	{ "index" : { "_index" : "olympics" } } 
 	{"Year": 1896, "City": "Athens", "Sport": "Aquatics", "Discipline": "Swimming", "Athlete": "HERSCHMANN, Otto", "Country": "AUT", "Gender": "Men", "Event": "100M Freestyle", "Medal": "Silver", "Season": "summer"}`
 
-	inputReader := strings.NewReader(input)
-	rc := io.NopCloser(inputReader)
+	rc := strings.NewReader("")
 
 	type args struct {
 		target string
-		body   io.ReadCloser
+		body   *strings.Reader
 	}
 	tests := []struct {
 		name    string
@@ -45,15 +43,23 @@ func TestBulkWorker(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "olympics",
+			name: "bulk-with-index-name",
 			args: args{
 				target: "olympics",
+				body:   rc,
+			},
+		},
+		{
+			name: "bulk-without-index-name",
+			args: args{
+				target: "",
 				body:   rc,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.args.body.Reset(input)
 			got, err := BulkWorker(tt.args.target, tt.args.body)
 			assert.Nil(t, err)
 			assert.Equal(t, len(got.Items), 2)

@@ -36,6 +36,8 @@ import (
 func Bulk(c *gin.Context) {
 	target := c.Param("target")
 
+	defer c.Request.Body.Close()
+
 	ret, err := BulkWorker(target, c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -47,6 +49,8 @@ func Bulk(c *gin.Context) {
 func ESBulk(c *gin.Context) {
 	target := c.Param("target")
 
+	defer c.Request.Body.Close()
+
 	startTime := time.Now()
 	ret, err := BulkWorker(target, c.Request.Body)
 	ret.Took = int(time.Since(startTime) / time.Millisecond)
@@ -56,12 +60,11 @@ func ESBulk(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func BulkWorker(target string, body io.ReadCloser) (*BulkResponse, error) {
+func BulkWorker(target string, body io.Reader) (*BulkResponse, error) {
 	bulkRes := &BulkResponse{Items: []map[string]*BulkResponseItem{}}
 
 	// Prepare to read the entire raw text of the body
 	scanner := bufio.NewScanner(body)
-	defer body.Close()
 
 	// force set batchSize
 	batchSize := startup.LoadBatchSize()
@@ -188,14 +191,24 @@ func BulkWorker(target string, body io.ReadCloser) (*BulkResponse, error) {
 					} else {
 						lastLineMetaData["_index"] = target
 					}
+					if lastLineMetaData["_index"] == "" {
+						return nil, errors.New("bulk index data format error")
+					}
 
 					lastLineMetaData["_id"] = v.(map[string]interface{})["_id"]
 				} else if k == "delete" {
 					nextLineIsData = false
 
 					lastLineMetaData["operation"] = k
-					lastLineMetaData["_index"] = v.(map[string]interface{})["_index"]
 					lastLineMetaData["_id"] = v.(map[string]interface{})["_id"]
+					if v.(map[string]interface{})["_index"] != "" { // if index is specified in metadata then it overtakes the index in the query path
+						lastLineMetaData["_index"] = v.(map[string]interface{})["_index"]
+					} else {
+						lastLineMetaData["_index"] = target
+					}
+					if lastLineMetaData["_index"] == "" {
+						return nil, errors.New("bulk index data format error")
+					}
 
 					// delete
 					indexName := lastLineMetaData["_index"].(string)
