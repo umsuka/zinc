@@ -58,7 +58,7 @@ func UpdateIndexMapping(c *gin.Context) {
 	var index *core.Index
 	index, exists := core.GetIndex(indexName)
 	if !exists {
-		index1, err := core.NewIndex(indexName, newIndex.StorageType, core.UseNewIndexMeta, nil)
+		index1, err := core.NewIndex(indexName, newIndex.StorageType, nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

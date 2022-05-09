@@ -11,7 +11,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package handlers
 
@@ -125,7 +125,7 @@ func BulkHandlerWorker(target string, body io.ReadCloser) (*BulkResponse, error)
 
 			_, exists := core.GetIndex(indexName)
 			if !exists { // If the requested indexName does not exist then create it
-				newIndex, err := core.NewIndex(indexName, "disk", core.UseNewIndexMeta, nil)
+				newIndex, err := core.NewIndex(indexName, "disk", nil)
 				if err != nil {
 					return bulkRes, err
 				}

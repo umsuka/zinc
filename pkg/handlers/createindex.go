@@ -82,7 +82,7 @@ func CreateIndexWorker(newIndex *core.Index, indexName string) error {
 	if analyzers != nil {
 		defaultSearchAnalyzer = analyzers["default"]
 	}
-	index, err := core.NewIndex(newIndex.Name, newIndex.StorageType, core.UseNewIndexMeta, defaultSearchAnalyzer)
+	index, err := core.NewIndex(newIndex.Name, newIndex.StorageType, defaultSearchAnalyzer)
 	if err != nil {
 		return errors.New(err.Error())
 	}

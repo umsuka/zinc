@@ -68,7 +68,7 @@ func TestIndex_UpdateDocument(t *testing.T) {
 			id := rand.Intn(1000)
 			indexName := "TestUpdateDocument.index_" + strconv.Itoa(id)
 
-			index, _ := NewIndex(indexName, "disk", UseNewIndexMeta, nil)
+			index, _ := NewIndex(indexName, "disk", nil)
 
 			err := index.UpdateDocument(tt.args.docID, tt.args.doc, tt.args.mintedID)
 

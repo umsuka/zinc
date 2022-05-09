@@ -191,7 +191,7 @@ func TestIndex_Search(t *testing.T) {
 			id := rand.Intn(10000)
 			indexName := "Search.index_" + strconv.Itoa(id)
 
-			index, _ := NewIndex(indexName, "disk", UseNewIndexMeta, nil)
+			index, _ := NewIndex(indexName, "disk", nil)
 
 			for _, d := range tt.data {
 				rand.Seed(time.Now().UnixNano())

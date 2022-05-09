@@ -25,7 +25,7 @@ func TestBuildBlugeDocumentFromJSON(t *testing.T) {
 	Convey("test build bluge document from json", t, func() {
 		Convey("build bluge document from json", func() {
 
-			idx, _ := NewIndex("index1", "disk", 0, nil)
+			idx, _ := NewIndex("index1", "disk", nil)
 			// var err error
 			// var doc *bluge.Document
 

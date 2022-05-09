@@ -25,12 +25,6 @@ import (
 	meta "github.com/zinclabs/zinc/pkg/meta/v2"
 )
 
-const (
-	_ = iota
-	NotCompatibleNewIndexMeta
-	UseNewIndexMeta
-)
-
 var ZINC_INDEX_LIST map[string]*Index
 var ZINC_SYSTEM_INDEX_LIST map[string]*Index
 
@@ -44,24 +38,6 @@ func init() {
 	ZINC_INDEX_LIST, _ = LoadZincIndexesFromMeta()
 	if err != nil {
 		log.Error().Msgf("Error loading user index: %s", err.Error())
-	}
-
-	// DEPRECATED compatibility with old code < v0.1.7
-	if len(ZINC_INDEX_LIST) == 0 {
-		log.Error().Bool("deprecated", true).Msg("Loading user indexes for old version...")
-		ZINC_INDEX_LIST, _ = LoadZincIndexesFromDisk()
-		s3List, _ := LoadZincIndexesFromS3()
-		for k, v := range s3List {
-			ZINC_INDEX_LIST[k] = v
-		}
-		minioList, _ := LoadZincIndexesFromMinIO()
-		for k, v := range minioList {
-			ZINC_INDEX_LIST[k] = v
-		}
-		// store index for new version
-		for _, index := range ZINC_INDEX_LIST {
-			StoreIndex(index)
-		}
 	}
 }
 

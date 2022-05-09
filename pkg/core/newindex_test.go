@@ -30,7 +30,7 @@ func TestNewIndex(t *testing.T) {
 		id := rand.Intn(1000)
 		indexName := "create.new.index_" + strconv.Itoa(id)
 
-		index, err := NewIndex(indexName, "disk", UseNewIndexMeta, nil)
+		index, err := NewIndex(indexName, "disk", nil)
 		So(err, ShouldBeNil)
 		So(index.Name, ShouldEqual, indexName)
 	})
