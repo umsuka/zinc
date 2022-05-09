@@ -16,23 +16,21 @@
 package core
 
 import (
-	"math/rand"
-	"strconv"
 	"testing"
-	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestNewIndex(t *testing.T) {
 	Convey("test new index storage - disk", t, func() {
-		rand.Seed(time.Now().UnixNano())
-		id := rand.Intn(1000)
-		indexName := "create.new.index_" + strconv.Itoa(id)
-
+		indexName := "TestNewIndex.index_1"
 		index, err := NewIndex(indexName, "disk", nil)
 		So(err, ShouldBeNil)
 		So(index.Name, ShouldEqual, indexName)
+
+		Convey("cleanup", func() {
+			DeleteIndex(indexName)
+		})
 	})
 	Convey("test new index storage s3", t, func() {
 		// TODO: support
@@ -41,9 +39,4 @@ func TestNewIndex(t *testing.T) {
 		// TODO: support
 	})
 
-	// Cleanup data folder
-	// err := os.RemoveAll("data")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
 }

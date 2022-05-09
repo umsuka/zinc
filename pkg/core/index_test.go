@@ -23,11 +23,10 @@ import (
 
 func TestBuildBlugeDocumentFromJSON(t *testing.T) {
 	Convey("test build bluge document from json", t, func() {
+		indexName := "TestBuildBlugeDocumentFromJSON.index_1"
 		Convey("build bluge document from json", func() {
-
-			idx, _ := NewIndex("index1", "disk", nil)
-			// var err error
-			// var doc *bluge.Document
+			idx, err := NewIndex(indexName, "disk", nil)
+			So(err, ShouldBeNil)
 
 			doc1 := make(map[string]interface{})
 			doc1["id"] = "1"
@@ -40,9 +39,14 @@ func TestBuildBlugeDocumentFromJSON(t *testing.T) {
 				"zip":    "95035",
 			}
 
-			_, err := idx.BuildBlugeDocumentFromJSON("1", doc1)
+			doc, err := idx.BuildBlugeDocumentFromJSON("1", doc1)
 			So(err, ShouldBeNil)
+			So(doc, ShouldNotBeNil)
+			So(string(doc.ID().Term()), ShouldEqual, "1")
+		})
+
+		Convey("cleanup", func() {
+			DeleteIndex(indexName)
 		})
 	})
-
 }

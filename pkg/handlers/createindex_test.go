@@ -17,7 +17,6 @@ package handlers
 
 import (
 	"math/rand"
-	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -26,9 +25,6 @@ import (
 )
 
 func TestCreateIndexWorker(t *testing.T) {
-	os.Setenv("ZINC_FIRST_ADMIN_USER", "admin")
-	os.Setenv("ZINC_FIRST_ADMIN_PASSWORD", "Complexpass#123")
-
 	type args struct {
 		newIndex  *core.Index
 		indexName string
@@ -57,6 +53,10 @@ func TestCreateIndexWorker(t *testing.T) {
 
 			if err := CreateIndexWorker(tt.args.newIndex, tt.args.indexName+strconv.Itoa(id)); (err != nil) != tt.wantErr {
 				t.Errorf("CreateIndexWorker() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err := core.DeleteIndex(tt.args.indexName + strconv.Itoa(id)); err != nil {
+				t.Errorf("DeleteIndex() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

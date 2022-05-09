@@ -185,25 +185,23 @@ func TestIndex_Search(t *testing.T) {
 			},
 		},
 	}
+
+	indexName := "Search.index_1"
+	index, err := NewIndex(indexName, "disk", nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, index)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rand.Seed(time.Now().UnixNano())
-			id := rand.Intn(10000)
-			indexName := "Search.index_" + strconv.Itoa(id)
-
-			index, _ := NewIndex(indexName, "disk", nil)
-
 			for _, d := range tt.data {
 				rand.Seed(time.Now().UnixNano())
 				docId := rand.Intn(1000)
 				index.UpdateDocument(strconv.Itoa(docId), d, true)
 			}
-
 			got, err := index.Search(tt.args.iQuery)
 			assert.Nil(t, err)
 			assert.Equal(t, 1, got.Hits.Total.Value)
 		})
 	}
 
-	// os.RemoveAll("data")
+	DeleteIndex(indexName)
 }

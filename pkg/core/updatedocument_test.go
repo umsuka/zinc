@@ -16,13 +16,10 @@
 package core
 
 import (
-	"math/rand"
-	"strconv"
 	"testing"
-	"time"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
+
 	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
 )
 
@@ -54,7 +51,7 @@ func TestIndex_UpdateDocument(t *testing.T) {
 		{
 			name: "UpdateDocument with provided ID",
 			args: args{
-				docID: "test2",
+				docID: "test1",
 				doc: map[string]interface{}{
 					"test": "Hello",
 				},
@@ -62,31 +59,27 @@ func TestIndex_UpdateDocument(t *testing.T) {
 			},
 		},
 	}
+
+	indexName := "TestUpdateDocument.index_1"
+	index, err := NewIndex(indexName, "disk", nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, index)
 	for _, tt := range tests {
-		Convey(tt.name, t, func() {
-			rand.Seed(time.Now().UnixNano())
-			id := rand.Intn(1000)
-			indexName := "TestUpdateDocument.index_" + strconv.Itoa(id)
-
-			index, _ := NewIndex(indexName, "disk", nil)
-
+		t.Run(tt.name, func(t *testing.T) {
 			err := index.UpdateDocument(tt.args.docID, tt.args.doc, tt.args.mintedID)
-
 			assert.Nil(t, err)
 
-			if err == nil {
-				query := &v1.ZincQuery{
-					SearchType: "match",
-					Query: v1.QueryParams{
-						Term: "Hello",
-					},
-				}
-				res, err := index.Search(query)
-				assert.Nil(t, err)
-				assert.Equal(t, 1, res.Hits.Total.Value)
+			query := &v1.ZincQuery{
+				SearchType: "match",
+				Query: v1.QueryParams{
+					Term: "Hello",
+				},
 			}
+			res, err := index.Search(query)
+			assert.Nil(t, err)
+			assert.Equal(t, res.Hits.Total.Value, 1)
 		})
 	}
 
-	// os.RemoveAll("data") // cleanup data folder
+	DeleteIndex(indexName)
 }

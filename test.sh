@@ -1,6 +1,8 @@
 #!/bin/bash
 
+rm -fR pkg/auth/data
 rm -fR pkg/core/data
+rm -fR pkg/handlers/data
 rm -fR test/data
 
 export ZINC_FIRST_ADMIN_USER="admin"

@@ -13,19 +13,21 @@
 * limitations under the License.
  */
 
-package auth
+package routes
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/zinclabs/zinc/pkg/auth"
 )
 
-func ZincAuthMiddleware(c *gin.Context) {
+func AuthMiddleware(c *gin.Context) {
 	// Get the Basic Authentication credentials
 	user, password, hasAuth := c.Request.BasicAuth()
 	if hasAuth {
-		if _, ok := VerifyCredentials(user, password); ok {
+		if _, ok := auth.VerifyCredentials(user, password); ok {
 			c.Next()
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"auth": "Invalid credentials"})
@@ -35,18 +37,4 @@ func ZincAuthMiddleware(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"auth": "Missing credentials"})
 		return
 	}
-}
-
-func VerifyCredentials(userID, password string) (SimpleUser, bool) {
-	user, ok := ZINC_CACHED_USERS[userID]
-	if !ok {
-		return SimpleUser{}, false
-	}
-
-	incomingEncryptedPassword := GeneratePassword(password, user.Salt)
-	if incomingEncryptedPassword == user.Password {
-		return user, true
-	}
-
-	return SimpleUser{}, false
 }

@@ -16,15 +16,12 @@
 package auth
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUser(t *testing.T) {
-	os.Setenv("ZINC_FIRST_ADMIN_USER", "admin")
-	os.Setenv("ZINC_FIRST_ADMIN_PASSWORD", "Complexpass#123")
 	type args struct {
 		userID            string
 		name              string
