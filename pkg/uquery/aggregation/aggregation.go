@@ -48,7 +48,7 @@ func Request(req zincaggregation.SearchAggregation, aggs map[string]meta.Aggrega
 		case agg.Max != nil:
 			req.AddAggregation(name, aggregations.Max(search.Field(agg.Max.Field)))
 		case agg.Min != nil:
-			req.AddAggregation(name, aggregations.Min(search.Field(agg.Max.Field)))
+			req.AddAggregation(name, aggregations.Min(search.Field(agg.Min.Field)))
 		case agg.Sum != nil:
 			req.AddAggregation(name, aggregations.Sum(search.Field(agg.Sum.Field)))
 		case agg.Count != nil:

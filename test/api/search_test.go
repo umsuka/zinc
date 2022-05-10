@@ -30,13 +30,14 @@ import (
 
 func TestSearch(t *testing.T) {
 
+	Convey("init data for search", t, func() {
+		body := bytes.NewBuffer(nil)
+		body.WriteString(indexData)
+		resp := request("PUT", "/api/"+indexName+"/_doc", body)
+		So(resp.Code, ShouldEqual, http.StatusOK)
+	})
+
 	Convey("POST /api/:target/_search", t, func() {
-		Convey("init data for search", func() {
-			body := bytes.NewBuffer(nil)
-			body.WriteString(indexData)
-			resp := request("PUT", "/api/"+indexName+"/_doc", body)
-			So(resp.Code, ShouldEqual, http.StatusOK)
-		})
 		Convey("search document with not exist indexName", func() {
 			body := bytes.NewBuffer(nil)
 			body.WriteString(`{}`)
@@ -45,13 +46,13 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document with exist indexName", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "alldocuments"}`)
+			body.WriteString(`{"query": {"match_all":{}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 		})
 		Convey("search document with not exist term", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "match", "query": {"term": "xxxx"}}`)
+			body.WriteString(`{"query": {"match": {"_all": "xxxx"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -62,7 +63,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document with exist term", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "match", "query": {"term": "DEMTSCHENKO"}}`)
+			body.WriteString(`{"query": {"match": {"_all": "DEMTSCHENKO"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -71,9 +72,9 @@ func TestSearch(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(data.Hits.Total.Value, ShouldBeGreaterThanOrEqualTo, 1)
 		})
-		Convey("search document type: alldocuments", func() {
+		Convey("search document type: match_all", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "alldocuments", "query": {}}`)
+			body.WriteString(`{"query": {"match_all": {}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -84,7 +85,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: wildcard", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "wildcard", "query": {"term": "dem*"}}`)
+			body.WriteString(`{"query": {"wildcard": {"_all": "dem*"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -95,7 +96,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: fuzzy", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "fuzzy", "query": {"term": "demtschenk"}}`)
+			body.WriteString(`{"query": {"fuzzy": {"Athlete": "demtschenk"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -106,13 +107,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: term", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{
-				"search_type": "term", 
-				"query": {
-					"term": "Turin", 
-					"field":"City"
-				}
-			}`)
+			body.WriteString(`{"query": {"term": {"City": "Turin"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -123,27 +118,11 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: daterange", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(fmt.Sprintf(`{
-				"search_type": "daterange",
-				"query": {
-					"start_time": "%s",
-					"end_time": "%s"
-				}
-			}`,
-				time.Now().UTC().Add(time.Hour*-24).Format("2006-01-02T15:04:05Z"),
-				time.Now().UTC().Format("2006-01-02T15:04:05Z"),
-			))
-			resp := request("POST", "/api/"+indexName+"/_search", body)
-			So(resp.Code, ShouldEqual, http.StatusOK)
-
-			data := new(meta.SearchResponse)
-			err := json.Unmarshal(resp.Body.Bytes(), data)
-			So(err, ShouldBeNil)
-			So(data.Hits.Total.Value, ShouldBeGreaterThanOrEqualTo, 1)
-		})
-		Convey("search document type: matchall", func() {
-			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "matchall", "query": {"term": "demtschenk"}}`)
+			body.WriteString(
+				fmt.Sprintf(`{"query": {"range": {"@timestamp": { "gte": "%s", "lt": "%s"}}}}`,
+					time.Now().UTC().Add(time.Hour*-24).Format("2006-01-02T15:04:05Z"),
+					time.Now().UTC().Format("2006-01-02T15:04:05Z"),
+				))
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -154,7 +133,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: match", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "match", "query": {"term": "DEMTSCHENKO"}}`)
+			body.WriteString(`{"query": {"match": {"_all": "DEMTSCHENKO"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -165,26 +144,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: matchphrase", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "matchphrase", "query": {"term": "DEMTSCHENKO"}}`)
-			resp := request("POST", "/api/"+indexName+"/_search", body)
-			So(resp.Code, ShouldEqual, http.StatusOK)
-
-			data := new(meta.SearchResponse)
-			err := json.Unmarshal(resp.Body.Bytes(), data)
-			So(err, ShouldBeNil)
-			So(data.Hits.Total.Value, ShouldBeGreaterThanOrEqualTo, 1)
-		})
-		Convey("search document type: multiphrase", func() {
-			body := bytes.NewBuffer(nil)
-			body.WriteString(`{
-				"search_type": "multiphrase",
-				"query": {
-					"terms": [
-						["demtschenko"],
-						["albert"]
-					]
-				}
-			}`)
+			body.WriteString(`{"query": {"match_phrase": {"_all": "DEMTSCHENKO"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -195,7 +155,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: prefix", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "prefix", "query": {"term": "dem"}}`)
+			body.WriteString(`{"query": {"prefix": {"_all": "dem"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -206,7 +166,7 @@ func TestSearch(t *testing.T) {
 		})
 		Convey("search document type: querystring", func() {
 			body := bytes.NewBuffer(nil)
-			body.WriteString(`{"search_type": "querystring", "query": {"term": "DEMTSCHENKO"}}`)
+			body.WriteString(`{"query": {"query_string": {"query": "DEMTSCHENKO"}}}`)
 			resp := request("POST", "/api/"+indexName+"/_search", body)
 			So(resp.Code, ShouldEqual, http.StatusOK)
 
@@ -221,11 +181,10 @@ func TestSearch(t *testing.T) {
 		Convey("terms aggregation", func() {
 			body := bytes.NewBuffer(nil)
 			body.WriteString(`{
-				"search_type": "matchall", 
+				"query": {"match_all":{}}, 
 				"aggs": {
-					"my-agg": {
-						"agg_type": "terms",
-						"field": "City"
+					"my-agg-term": {
+						"terms": {"field": "City"}
 					}
 				}
 			}`)
@@ -241,19 +200,16 @@ func TestSearch(t *testing.T) {
 		Convey("metric aggregation", func() {
 			body := bytes.NewBuffer(nil)
 			body.WriteString(`{
-				"search_type": "matchall", 
+				"query": {"match_all":{}}, 
 				"aggs": {
 					"my-agg-max": {
-						"agg_type": "max",
-						"field": "Year"
+						"max": {"field": "Year"}
 					},
 					"my-agg-min": {
-						"agg_type": "min",
-						"field": "Year"
+						"min": {"field": "Year"}
 					},
 					"my-agg-avg": {
-						"agg_type": "avg",
-						"field": "Year"
+						"avg": {"field": "Year"}
 					}
 				}
 			}`)
@@ -267,4 +223,8 @@ func TestSearch(t *testing.T) {
 		})
 	})
 
+	// Convey("cleanup", t, func() {
+	// 	resp := request("DELETE", "/api/index/"+indexName, nil)
+	// 	So(resp.Code, ShouldEqual, http.StatusOK)
+	// })
 }
