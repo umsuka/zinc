@@ -18,35 +18,34 @@ package core
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildBlugeDocumentFromJSON(t *testing.T) {
-	Convey("test build bluge document from json", t, func() {
-		indexName := "TestBuildBlugeDocumentFromJSON.index_1"
-		Convey("build bluge document from json", func() {
-			idx, err := NewIndex(indexName, "disk", nil)
-			So(err, ShouldBeNil)
+	indexName := "TestBuildBlugeDocumentFromJSON.index_1"
+	t.Run("build bluge document from json", func(t *testing.T) {
+		idx, err := NewIndex(indexName, "disk", nil)
+		assert.Nil(t, err)
 
-			doc1 := make(map[string]interface{})
-			doc1["id"] = "1"
-			doc1["name"] = "test1"
-			doc1["age"] = 10
-			doc1["address"] = map[string]interface{}{
-				"street": "447 Great Mall Dr",
-				"city":   "Milpitas",
-				"state":  "CA",
-				"zip":    "95035",
-			}
+		doc1 := make(map[string]interface{})
+		doc1["id"] = "1"
+		doc1["name"] = "test1"
+		doc1["age"] = 10
+		doc1["address"] = map[string]interface{}{
+			"street": "447 Great Mall Dr",
+			"city":   "Milpitas",
+			"state":  "CA",
+			"zip":    "95035",
+		}
 
-			doc, err := idx.BuildBlugeDocumentFromJSON("1", doc1)
-			So(err, ShouldBeNil)
-			So(doc, ShouldNotBeNil)
-			So(string(doc.ID().Term()), ShouldEqual, "1")
-		})
+		doc, err := idx.BuildBlugeDocumentFromJSON("1", doc1)
+		assert.Nil(t, err)
+		assert.NotNil(t, doc)
+		assert.Equal(t, "1", string(doc.ID().Term()))
+	})
 
-		Convey("cleanup", func() {
-			DeleteIndex(indexName)
-		})
+	t.Run("cleanup", func(t *testing.T) {
+		err := DeleteIndex(indexName)
+		assert.Nil(t, err)
 	})
 }

@@ -16,8 +16,6 @@
 package auth
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,17 +54,15 @@ func TestGetUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fmt.Println(os.Getwd())
 			CreateUser(tt.input.ID, tt.input.Name, tt.input.Password, tt.input.Role)
 			got, got1, err := GetUser(tt.args.userID)
 
-			assert.Equal(t, err, nil)
+			assert.Nil(t, err)
 			assert.Equal(t, got.ID, tt.want.ID)
 			assert.Equal(t, got.Name, tt.want.Name)
 			assert.Equal(t, got.Role, tt.want.Role)
 			assert.Equal(t, got1, tt.want1)
 
-			// os.RemoveAll("data")
 		})
 	}
 }

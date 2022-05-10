@@ -18,31 +18,30 @@ package core
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadIndexes(t *testing.T) {
-	Convey("test load index", t, func() {
-		Convey("load system index", func() {
-			// index cann't be reopen, so need close first
-			for _, index := range ZINC_SYSTEM_INDEX_LIST {
-				index.Writer.Close()
-			}
-			var err error
-			ZINC_SYSTEM_INDEX_LIST, err = LoadZincSystemIndexes()
-			So(err, ShouldBeNil)
-			So(len(ZINC_SYSTEM_INDEX_LIST), ShouldEqual, len(systemIndexList))
-			So(ZINC_SYSTEM_INDEX_LIST["_index_mapping"].Name, ShouldEqual, "_index_mapping")
-		})
-		Convey("load user index from disk", func() {
-			// index cann't be reopen, so need close first
-			for _, index := range ZINC_INDEX_LIST {
-				index.Writer.Close()
-			}
-			var err error
-			ZINC_INDEX_LIST, err = LoadZincIndexesFromMeta()
-			So(err, ShouldBeNil)
-			So(len(ZINC_INDEX_LIST), ShouldBeGreaterThanOrEqualTo, 0)
-		})
+	t.Run("load system index", func(t *testing.T) {
+		// index cann't be reopen, so need close first
+		for _, index := range ZINC_SYSTEM_INDEX_LIST {
+			index.Writer.Close()
+		}
+		var err error
+		ZINC_SYSTEM_INDEX_LIST, err = LoadZincSystemIndexes()
+		assert.Nil(t, err)
+		assert.Equal(t, len(systemIndexList), len(ZINC_SYSTEM_INDEX_LIST))
+		assert.Equal(t, "_index_mapping", ZINC_SYSTEM_INDEX_LIST["_index_mapping"].Name)
+	})
+
+	t.Run("load user index from disk", func(t *testing.T) {
+		// index cann't be reopen, so need close first
+		for _, index := range ZINC_INDEX_LIST {
+			index.Writer.Close()
+		}
+		var err error
+		ZINC_INDEX_LIST, err = LoadZincIndexesFromMeta()
+		assert.Nil(t, err)
+		assert.GreaterOrEqual(t, 0, len(ZINC_INDEX_LIST))
 	})
 }

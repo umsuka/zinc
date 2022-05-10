@@ -18,30 +18,28 @@ package zutils
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnv(t *testing.T) {
-	Convey("zutils:env", t, func() {
-		Convey("GetEnv", func() {
-			a := GetEnv("ZINC_SENTRY", "true")
-			So(a, ShouldEqual, "true")
-			a = GetEnv("ZINC_SENTRY", "")
-			So(a, ShouldEqual, "")
-		})
-		Convey("GetEnvToUpper", func() {
-			a := GetEnvToUpper("ZINC_SENTRY", "true")
-			So(a, ShouldEqual, "TRUE")
-		})
-		Convey("GetEnvToLower", func() {
-			a := GetEnvToLower("ZINC_SENTRY", "TRUE")
-			So(a, ShouldEqual, "true")
-		})
-		Convey("GetEnvBool", func() {
-			a := GetEnvToBool("ZINC_SENTRY", "true")
-			So(a, ShouldEqual, true)
-			a = GetEnvToBool("ZINC_SENTRY", "")
-			So(a, ShouldEqual, false)
-		})
+	t.Run("GetEnv", func(t *testing.T) {
+		a := GetEnv("ZINC_SENTRY", "true")
+		assert.Equal(t, "true", a)
+		a = GetEnv("ZINC_SENTRY", "")
+		assert.Equal(t, "", a)
+	})
+	t.Run("GetEnvToUpper", func(t *testing.T) {
+		a := GetEnvToUpper("ZINC_SENTRY", "true")
+		assert.Equal(t, "TRUE", a)
+	})
+	t.Run("GetEnvToLower", func(t *testing.T) {
+		a := GetEnvToLower("ZINC_SENTRY", "TRUE")
+		assert.Equal(t, "true", a)
+	})
+	t.Run("GetEnvBool", func(t *testing.T) {
+		a := GetEnvToBool("ZINC_SENTRY", "true")
+		assert.Equal(t, true, a)
+		a = GetEnvToBool("ZINC_SENTRY", "")
+		assert.Equal(t, false, a)
 	})
 }

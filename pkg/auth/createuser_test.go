@@ -53,7 +53,7 @@ func TestCreateUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := CreateUser(tt.args.userID, tt.args.name, tt.args.plaintextPassword, tt.args.role)
-			assert.Equal(t, err, nil)
+			assert.Nil(t, err)
 			assert.Equal(t, got.ID, tt.want.ID)
 			assert.Equal(t, got.Name, tt.want.Name)
 
@@ -63,6 +63,4 @@ func TestCreateUser(t *testing.T) {
 
 		})
 	}
-
-	// os.RemoveAll("data")
 }
