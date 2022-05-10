@@ -17,13 +17,13 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
 
+	"github.com/goccy/go-json"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -17,12 +17,12 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/goccy/go-json"
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/zinclabs/zinc/pkg/meta"

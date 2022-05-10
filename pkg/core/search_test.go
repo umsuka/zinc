@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/zinclabs/zinc/pkg/meta"
-	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
 )
 
 func TestIndex_Search(t *testing.T) {
@@ -42,9 +42,12 @@ func TestIndex_Search(t *testing.T) {
 			name: "Search Query - Match",
 			args: args{
 				iQuery: &meta.ZincQuery{
-					SearchType: "match",
-					Query: meta.QueryParams{
-						Term: "Prabhat",
+					Query: &meta.Query{
+						Match: map[string]*meta.MatchQuery{
+							"_all": {
+								Query: "Prabhat",
+							},
+						},
 					},
 				},
 			},
@@ -62,10 +65,13 @@ func TestIndex_Search(t *testing.T) {
 		{
 			name: "Search Query - Term",
 			args: args{
-				iQuery: &v1.ZincQuery{
-					SearchType: "term",
-					Query: v1.QueryParams{
-						Term: "angeles",
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						Term: map[string]*meta.TermQuery{
+							"_all": {
+								Value: "angeles",
+							},
+						},
 					},
 				},
 			},
@@ -91,8 +97,10 @@ func TestIndex_Search(t *testing.T) {
 		{
 			name: "Search Query - MatchAll",
 			args: args{
-				iQuery: &v1.ZincQuery{
-					SearchType: "matchall",
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						MatchAll: &meta.MatchAllQuery{},
+					},
 				},
 			},
 			data: []map[string]interface{}{
@@ -109,10 +117,13 @@ func TestIndex_Search(t *testing.T) {
 		{
 			name: "Search Query - wildcard",
 			args: args{
-				iQuery: &v1.ZincQuery{
-					SearchType: "wildcard",
-					Query: v1.QueryParams{
-						Term: "san*",
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						Wildcard: map[string]*meta.WildcardQuery{
+							"_all": {
+								Value: "san*",
+							},
+						},
 					},
 				},
 			},
@@ -130,10 +141,13 @@ func TestIndex_Search(t *testing.T) {
 		{
 			name: "Search Query - fuzzy",
 			args: args{
-				iQuery: &v1.ZincQuery{
-					SearchType: "fuzzy",
-					Query: v1.QueryParams{
-						Term: "fransisco", // note the wrong spelling
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						Fuzzy: map[string]*meta.FuzzyQuery{
+							"_all": {
+								Value: "fransisco", // note the wrong spelling
+							},
+						},
 					},
 				},
 			},
@@ -159,10 +173,11 @@ func TestIndex_Search(t *testing.T) {
 		{
 			name: "Search Query - querystring1",
 			args: args{
-				iQuery: &v1.ZincQuery{
-					SearchType: "querystring",
-					Query: v1.QueryParams{
-						Term: "angeles",
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						QueryString: &meta.QueryStringQuery{
+							Query: "angeles",
+						},
 					},
 				},
 			},
@@ -188,11 +203,12 @@ func TestIndex_Search(t *testing.T) {
 	}
 
 	indexName := "Search.index_1"
-	index, err := NewIndex(indexName, "disk", nil)
-	assert.Nil(t, err)
-	assert.NotNil(t, index)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			index, err := NewIndex(indexName, "disk", nil)
+			assert.Nil(t, err)
+			assert.NotNil(t, index)
+
 			for _, d := range tt.data {
 				rand.Seed(time.Now().UnixNano())
 				docId := rand.Intn(1000)
@@ -201,8 +217,9 @@ func TestIndex_Search(t *testing.T) {
 			got, err := index.Search(tt.args.iQuery)
 			assert.Nil(t, err)
 			assert.Equal(t, 1, got.Hits.Total.Value)
+
+			DeleteIndex(indexName)
 		})
 	}
 
-	DeleteIndex(indexName)
 }

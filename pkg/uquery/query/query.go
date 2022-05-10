@@ -21,20 +21,37 @@ import (
 
 	"github.com/blugelabs/bluge"
 	"github.com/blugelabs/bluge/analysis"
+	"github.com/goccy/go-json"
 
 	"github.com/zinclabs/zinc/pkg/errors"
 	"github.com/zinclabs/zinc/pkg/meta"
 )
 
-func Query(query map[string]interface{}, mappings *meta.Mappings, analyzers map[string]*analysis.Analyzer) (bluge.Query, error) {
+func Query(query interface{}, mappings *meta.Mappings, analyzers map[string]*analysis.Analyzer) (bluge.Query, error) {
 	if query == nil {
 		return MatchAllQuery()
+	}
+
+	if q, ok := query.(*meta.Query); ok {
+		data, err := json.Marshal(q)
+		if err != nil {
+			return nil, errors.New(errors.ErrorTypeInvalidArgument, "query must be a map[string]interface{}")
+		}
+		var newQuery map[string]interface{}
+		if err = json.Unmarshal(data, &newQuery); err != nil {
+			return nil, errors.New(errors.ErrorTypeInvalidArgument, "query must be a map[string]interface{}")
+		}
+		query = newQuery
+	}
+	q, ok := query.(map[string]interface{})
+	if !ok {
+		return nil, errors.New(errors.ErrorTypeInvalidArgument, "query must be a map[string]interface{}")
 	}
 
 	var subq bluge.Query
 	var cmd string
 	var err error
-	for k, t := range query {
+	for k, t := range q {
 		if subq != nil && cmd != "" {
 			return nil, errors.New(errors.ErrorTypeParsingException, fmt.Sprintf("[%s] malformed query, excepted [END_OBJECT] but found [FIELD_NAME] %s", cmd, k))
 		}

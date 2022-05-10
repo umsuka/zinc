@@ -21,8 +21,9 @@ const (
 	ErrorTypeParsingException         = "parsing_exception"
 	ErrorTypeXContentParseException   = "x_content_parse_exception"
 	ErrorTypeIllegalArgumentException = "illegal_argument_exception"
-	ErrorTypeNotImplemented           = "not_implemented"
 	ErrorTypeRuntimeException         = "runtime_exception"
+	ErrorTypeNotImplemented           = "not_implemented"
+	ErrorTypeInvalidArgument          = "invalid_argument"
 )
 
 type Error struct {

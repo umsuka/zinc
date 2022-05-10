@@ -17,36 +17,32 @@ package core
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"net/http"
+	"errors"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/blugelabs/bluge"
-	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/rs/zerolog/log"
+
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
 
 func DeleteIndex(name string) error {
-	indexName := c.Param("target")
-
 	// 0. Check if index exists and Get the index storage type - disk, s3 or memory
-	index, exists := core.GetIndex(indexName)
+	index, exists := GetIndex(name)
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "index " + indexName + " does not exists"})
-		return
+		return errors.New("index " + name + " does not exists")
 	}
 
 	// 1. Close the index writer
-	index.Writer.Close()
+	_ = index.Writer.Close()
 
 	// 2. Delete from the cache
-	delete(core.ZINC_INDEX_LIST, index.Name)
+	delete(ZINC_INDEX_LIST, index.Name)
 
 	// 3. Physically delete the index
 	if index.StorageType == "disk" {
@@ -54,33 +50,26 @@ func DeleteIndex(name string) error {
 		err := os.RemoveAll(dataPath + "/" + index.Name)
 		if err != nil {
 			log.Error().Msgf("failed to delete index: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return err
 		}
 	} else if index.StorageType == "s3" {
 		err := deleteFilesForIndexFromS3(index.Name)
 		if err != nil {
 			log.Error().Msgf("failed to delete index: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return err
 		}
 	} else if index.StorageType == "minio" {
 		err := deleteFilesForIndexFromMinIO(index.Name)
 		if err != nil {
 			log.Error().Msgf("failed to delete index: %s", err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return err
 		}
 	}
 
+	// 4. Delete metadata
 	bdoc := bluge.NewDocument(name)
 	bdoc.AddField(bluge.NewCompositeFieldExcluding("_all", nil))
-	err := ZINC_SYSTEM_INDEX_LIST["_index"].Writer.Delete(bdoc.ID())
-	if err != nil {
-		return fmt.Errorf("core.DeleteIndex: error deleting template: %s", err.Error())
-	}
-
-	return nil
+	return ZINC_SYSTEM_INDEX_LIST["_index"].Writer.Delete(bdoc.ID())
 }
 
 func deleteFilesForIndexFromMinIO(indexName string) error {

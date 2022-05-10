@@ -18,24 +18,30 @@ package core
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewIndex(t *testing.T) {
-	Convey("test new index storage - disk", t, func() {
+	t.Run("test new index storage - disk", func(t *testing.T) {
 		indexName := "TestNewIndex.index_1"
 		index, err := NewIndex(indexName, "disk", nil)
-		So(err, ShouldBeNil)
-		So(index.Name, ShouldEqual, indexName)
+		assert.Nil(t, err)
+		assert.Equal(t, index.Name, indexName)
 
-		Convey("cleanup", func() {
-			DeleteIndex(indexName)
+		err = StoreIndex(index)
+		assert.Nil(t, err)
+
+		t.Run("cleanup", func(t *testing.T) {
+			err := DeleteIndex(indexName)
+			assert.Nil(t, err)
 		})
 	})
-	Convey("test new index storage s3", t, func() {
+
+	t.Run("test new index storage s3", func(t *testing.T) {
 		// TODO: support
 	})
-	Convey("test new index storage minio", t, func() {
+
+	t.Run("test new index storage minio", func(t *testing.T) {
 		// TODO: support
 	})
 

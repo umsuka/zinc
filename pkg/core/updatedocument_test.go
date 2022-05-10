@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 func TestIndex_UpdateDocument(t *testing.T) {
@@ -69,15 +69,18 @@ func TestIndex_UpdateDocument(t *testing.T) {
 			err := index.UpdateDocument(tt.args.docID, tt.args.doc, tt.args.mintedID)
 			assert.Nil(t, err)
 
-			query := &v1.ZincQuery{
-				SearchType: "match",
-				Query: v1.QueryParams{
-					Term: "Hello",
+			query := &meta.ZincQuery{
+				Query: &meta.Query{
+					Match: map[string]*meta.MatchQuery{
+						"_all": {
+							Query: "Hello",
+						},
+					},
 				},
 			}
 			res, err := index.Search(query)
 			assert.Nil(t, err)
-			assert.Equal(t, res.Hits.Total.Value, 1)
+			assert.Equal(t, 1, res.Hits.Total.Value)
 		})
 	}
 
