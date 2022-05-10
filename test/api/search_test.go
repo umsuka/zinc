@@ -25,7 +25,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	meta "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 func TestSearch(t *testing.T) {

@@ -26,7 +26,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/zinclabs/zinc/pkg/auth"
-	meta "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 type userLoginResponse struct {
