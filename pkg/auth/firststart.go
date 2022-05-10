@@ -27,23 +27,16 @@ func init() {
 	// initialize cache
 	ZINC_CACHED_USERS = make(map[string]SimpleUser)
 
-	firstStart, err := IsFirstStart()
+	firstStart, err := isFirstStart()
 	if err != nil {
 		log.Print(err)
 	}
 	if firstStart {
-		// create default user from environment variable
-		adminUser := os.Getenv("ZINC_FIRST_ADMIN_USER")
-		adminPassword := os.Getenv("ZINC_FIRST_ADMIN_PASSWORD")
-
-		if adminUser == "" || adminPassword == "" {
-			log.Fatal().Msg("ZINC_FIRST_ADMIN_USER and ZINC_FIRST_ADMIN_PASSWORD must be set on first start. You should also change the credentials after first login.")
-		}
-		CreateUser(adminUser, adminUser, adminPassword, "admin")
+		initFirstUser()
 	}
 }
 
-func IsFirstStart() (bool, error) {
+func isFirstStart() (bool, error) {
 	userList, err := GetAllUsersWorker()
 	if err != nil {
 		return true, err
@@ -59,4 +52,14 @@ func IsFirstStart() (bool, error) {
 	}
 
 	return false, nil
+}
+
+func initFirstUser() {
+	// create default user from environment variable
+	adminUser := os.Getenv("ZINC_FIRST_ADMIN_USER")
+	adminPassword := os.Getenv("ZINC_FIRST_ADMIN_PASSWORD")
+	if adminUser == "" || adminPassword == "" {
+		log.Panic().Msg("ZINC_FIRST_ADMIN_USER and ZINC_FIRST_ADMIN_PASSWORD must be set on first start. You should also change the credentials after first login")
+	}
+	if _, err:= CreateUser(adminUser, adminUser, adminPassword, "admin")
 }
