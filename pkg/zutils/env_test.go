@@ -17,29 +17,148 @@ package zutils
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestEnv(t *testing.T) {
-	t.Run("GetEnv", func(t *testing.T) {
-		a := GetEnv("ZINC_SENTRY", "true")
-		assert.Equal(t, "true", a)
-		a = GetEnv("ZINC_SENTRY", "")
-		assert.Equal(t, "", a)
-	})
-	t.Run("GetEnvToUpper", func(t *testing.T) {
-		a := GetEnvToUpper("ZINC_SENTRY", "true")
-		assert.Equal(t, "TRUE", a)
-	})
-	t.Run("GetEnvToLower", func(t *testing.T) {
-		a := GetEnvToLower("ZINC_SENTRY", "TRUE")
-		assert.Equal(t, "true", a)
-	})
-	t.Run("GetEnvBool", func(t *testing.T) {
-		a := GetEnvToBool("ZINC_SENTRY", "true")
-		assert.Equal(t, true, a)
-		a = GetEnvToBool("ZINC_SENTRY", "")
-		assert.Equal(t, false, a)
-	})
+func TestGetEnv(t *testing.T) {
+	type args struct {
+		key      string
+		fallback string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "env",
+			args: args{
+				key:      "ZINC_FIRST_ADMIN_USER",
+				fallback: "value",
+			},
+			want: "admin",
+		},
+		{
+			name: "not exists",
+			args: args{
+				key:      "notExists",
+				fallback: "value",
+			},
+			want: "value",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetEnv(tt.args.key, tt.args.fallback); got != tt.want {
+				t.Errorf("GetEnv() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetEnvToLower(t *testing.T) {
+	type args struct {
+		key      string
+		fallback string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "env",
+			args: args{
+				key:      "ZINC_FIRST_ADMIN_USER",
+				fallback: "VALUE",
+			},
+			want: "admin",
+		},
+		{
+			name: "not exists",
+			args: args{
+				key:      "notExists",
+				fallback: "VALUE",
+			},
+			want: "value",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetEnvToLower(tt.args.key, tt.args.fallback); got != tt.want {
+				t.Errorf("GetEnvToLower() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetEnvToUpper(t *testing.T) {
+	type args struct {
+		key      string
+		fallback string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "env",
+			args: args{
+				key:      "ZINC_FIRST_ADMIN_USER",
+				fallback: "value",
+			},
+			want: "ADMIN",
+		},
+		{
+			name: "not exists",
+			args: args{
+				key:      "notExists",
+				fallback: "value",
+			},
+			want: "VALUE",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetEnvToUpper(tt.args.key, tt.args.fallback); got != tt.want {
+				t.Errorf("GetEnvToUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetEnvToBool(t *testing.T) {
+	type args struct {
+		key      string
+		fallback string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "env",
+			args: args{
+				key:      "ZINC_PROMETHEUS_ENABLE",
+				fallback: "true",
+			},
+			want: true,
+		},
+		{
+			name: "not exists",
+			args: args{
+				key:      "notExists",
+				fallback: "true",
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetEnvToBool(tt.args.key, tt.args.fallback); got != tt.want {
+				t.Errorf("GetEnvToBool() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -14,3 +14,103 @@
  */
 
 package zutils
+
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestParseTimeZone(t *testing.T) {
+	date := "2020-02-02 02:02:02"
+	layout := "2006-01-02 15:04:05"
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *time.Location
+		wantErr bool
+	}{
+		{
+			name: "UTC",
+			args: args{
+				name: "UTC",
+			},
+			want:    time.UTC,
+			wantErr: false,
+		},
+		{
+			name: "Local",
+			args: args{
+				name: "Local",
+			},
+			want:    time.Local,
+			wantErr: false,
+		},
+		{
+			name: "+01:00",
+			args: args{
+				name: "+01:00",
+			},
+			want:    time.FixedZone("UTC", 3600),
+			wantErr: false,
+		},
+		{
+			name: "+08:00",
+			args: args{
+				name: "+08:00",
+			},
+			want:    time.FixedZone("UTC", 3600*8),
+			wantErr: false,
+		},
+		{
+			name: "-08:00",
+			args: args{
+				name: "-08:00",
+			},
+			want:    time.FixedZone("UTC", -3600*8),
+			wantErr: false,
+		},
+		{
+			name: "+0800",
+			args: args{
+				name: "+0800",
+			},
+			want:    time.FixedZone("UTC", 3600*8),
+			wantErr: false,
+		},
+		{
+			name: "-0800",
+			args: args{
+				name: "-0800",
+			},
+			want:    time.FixedZone("UTC", -3600*8),
+			wantErr: false,
+		},
+		{
+			name: "error timezone",
+			args: args{
+				name: "xxxx",
+			},
+			want:    time.UTC,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseTimeZone(tt.args.name)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.Nil(t, err)
+			wantTime, _ := time.ParseInLocation(layout, date, tt.want)
+			gotTime, err := time.ParseInLocation(layout, date, got)
+			assert.Nil(t, err)
+			assert.True(t, wantTime.Equal(gotTime))
+		})
+	}
+}

@@ -79,7 +79,7 @@ func TestCreateUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := CreateUser(tt.args.userID, tt.args.name, tt.args.plaintextPassword, tt.args.role)
 			if tt.wantErr {
-				assert.NotNil(t, err)
+				assert.Error(t, err)
 				return
 			} else {
 				assert.Nil(t, err)
