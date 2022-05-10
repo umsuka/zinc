@@ -21,42 +21,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetUser(t *testing.T) {
+func TestVerifyCredentials(t *testing.T) {
 	type args struct {
-		userID string
+		userID   string
+		password string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    ZincUser
-		want1   bool
-		wantErr bool
-		input   *ZincUser
+		name  string
+		args  args
+		want  SimpleUser
+		want1 bool
 	}{
 		{
-			name: "get user",
+			name: "test with admin",
 			args: args{
-				userID: "testuser",
+				userID:   "admin",
+				password: "Complexpass#123",
 			},
-			want: ZincUser{
-				ID:   "testuser",
-				Name: "Test User",
-				Role: "admin",
+			want: SimpleUser{
+				ID: "admin",
 			},
 			want1: true,
-			input: &ZincUser{
-				ID:       "testuser",
-				Name:     "Test User",
-				Role:     "admin",
-				Password: "testpassword",
-			},
 		},
 		{
-			name: "get user not exists",
+			name: "test with error password",
 			args: args{
-				userID: "testuserNotExists",
+				userID:   "admin",
+				password: "xxxxxxxx",
 			},
-			want: ZincUser{
+			want: SimpleUser{
+				ID: "",
+			},
+			want1: false,
+		},
+		{
+			name: "test with error user",
+			args: args{
+				userID:   "xxxxxxxx",
+				password: "xxxxxxxx",
+			},
+			want: SimpleUser{
 				ID: "",
 			},
 			want1: false,
@@ -64,16 +68,9 @@ func TestGetUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.input != nil {
-				CreateUser(tt.input.ID, tt.input.Name, tt.input.Password, tt.input.Role)
-			}
-			got, got1, err := GetUser(tt.args.userID)
-			assert.Nil(t, err)
-			assert.Equal(t, got.ID, tt.want.ID)
-			assert.Equal(t, got.Name, tt.want.Name)
-			assert.Equal(t, got.Role, tt.want.Role)
-			assert.Equal(t, got1, tt.want1)
-
+			got, got1 := VerifyCredentials(tt.args.userID, tt.args.password)
+			assert.Equal(t, tt.want.ID, got.ID)
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
