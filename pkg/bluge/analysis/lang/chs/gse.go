@@ -50,6 +50,10 @@ func init() {
 	seg = new(gse.Segmenter)
 	enable := zutils.GetEnvToBool("ZINC_PLUGIN_GSE_ENABLE", "FALSE")     // false / true
 	embed := zutils.GetEnvToUpper("ZINC_PLUGIN_GSE_DICT_EMBED", "SMALL") // small / big
+	loadDict(enable, embed)
+}
+
+func loadDict(enable bool, embed string) {
 	if enable {
 		if embed == "BIG" {
 			seg.LoadDictEmbed("zh_s")
