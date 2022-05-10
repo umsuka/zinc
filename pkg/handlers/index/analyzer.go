@@ -24,7 +24,7 @@ import (
 
 	"github.com/zinclabs/zinc/pkg/core"
 	"github.com/zinclabs/zinc/pkg/errors"
-	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
+	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/analysis"
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
 

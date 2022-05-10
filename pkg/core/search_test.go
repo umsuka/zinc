@@ -22,27 +22,28 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zinclabs/zinc/pkg/meta"
 	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
 )
 
 func TestIndex_Search(t *testing.T) {
 
 	type args struct {
-		iQuery *v1.ZincQuery
+		iQuery *meta.ZincQuery
 	}
 	tests := []struct {
 		name    string
 		args    args
 		data    []map[string]interface{}
-		want    *v1.SearchResponse
+		want    *meta.SearchResponse
 		wantErr bool
 	}{
 		{
 			name: "Search Query - Match",
 			args: args{
-				iQuery: &v1.ZincQuery{
+				iQuery: &meta.ZincQuery{
 					SearchType: "match",
-					Query: v1.QueryParams{
+					Query: meta.QueryParams{
 						Term: "Prabhat",
 					},
 				},

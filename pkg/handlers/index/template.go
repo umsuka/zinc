@@ -21,7 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/zinclabs/zinc/pkg/core"
-	"github.com/zinclabs/zinc/pkg/uquery/v2/template"
+	"github.com/zinclabs/zinc/pkg/uquery/template"
 )
 
 func ListTemplate(c *gin.Context) {

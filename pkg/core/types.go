@@ -22,7 +22,7 @@ import (
 	"github.com/blugelabs/bluge/analysis"
 	"github.com/rs/zerolog/log"
 
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 var ZINC_INDEX_LIST map[string]*Index

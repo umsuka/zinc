@@ -29,8 +29,8 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/rs/zerolog/log"
 
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
-	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
+	"github.com/zinclabs/zinc/pkg/meta"
+	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/analysis"
 	"github.com/zinclabs/zinc/pkg/zutils"
 	"github.com/zinclabs/zinc/pkg/zutils/flatten"
 )

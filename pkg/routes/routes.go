@@ -30,7 +30,7 @@ import (
 	"github.com/zinclabs/zinc/pkg/handlers/document"
 	"github.com/zinclabs/zinc/pkg/handlers/index"
 	"github.com/zinclabs/zinc/pkg/handlers/search"
-	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 // SetRoutes sets up all gin HTTP API endpoints that can be called by front end
@@ -50,9 +50,9 @@ func SetRoutes(r *gin.Engine) {
 		AccessLog(r)
 	}
 
-	r.GET("/", v1.GUI)
-	r.GET("/version", v1.GetVersion)
-	r.GET("/healthz", v1.GetHealthz)
+	r.GET("/", meta.GUI)
+	r.GET("/version", meta.GetVersion)
+	r.GET("/healthz", meta.GetHealthz)
 
 	front, err := zinc.GetFrontendAssets()
 	if err != nil {
@@ -86,39 +86,41 @@ func SetRoutes(r *gin.Engine) {
 	// index
 	r.GET("/api/index", AuthMiddleware, index.List)
 	r.PUT("/api/index", AuthMiddleware, index.Create)
+	r.PUT("/api/index/:target", AuthMiddleware, index.Create)
 	r.DELETE("/api/index/:target", AuthMiddleware, index.Delete)
 	// index settings
 	r.GET("/api/:target/_mapping", AuthMiddleware, index.GetMapping)
 	r.PUT("/api/:target/_mapping", AuthMiddleware, index.SetMapping)
 	r.GET("/api/:target/_settings", AuthMiddleware, index.GetSettings)
 	r.PUT("/api/:target/_settings", AuthMiddleware, index.SetSettings)
-	r.POST("/api/:target/_analyze", AuthMiddleware, index.Analyze)
+	// analyze
 	r.POST("/api/_analyze", AuthMiddleware, index.Analyze)
+	r.POST("/api/:target/_analyze", AuthMiddleware, index.Analyze)
+
+	// search
+	r.POST("/api/:target/_search", AuthMiddleware, search.SearchDSL)
 
 	// document
-
 	// Document Bulk update/insert
 	r.POST("/api/_bulk", AuthMiddleware, document.Bulk)
+	r.POST("/api/:target/_bulk", AuthMiddleware, document.Bulk)
 	// Document CRUD APIs. Update is same as create.
 	r.PUT("/api/:target/_doc", AuthMiddleware, document.CreateUpdate)
 	r.PUT("/api/:target/_doc/:id", AuthMiddleware, document.CreateUpdate)
 	r.DELETE("/api/:target/_doc/:id", AuthMiddleware, document.Delete)
-
-	// search
-	r.POST("/api/:target/_search", AuthMiddleware, search.Search)
 
 	/**
 	 * elastic compatible APIs
 	 */
 
 	r.GET("/es/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, v1.NewESInfo(c))
+		c.JSON(http.StatusOK, meta.NewESInfo(c))
 	})
 	r.GET("/es/_license", func(c *gin.Context) {
-		c.JSON(http.StatusOK, v1.NewESLicense(c))
+		c.JSON(http.StatusOK, meta.NewESLicense(c))
 	})
 	r.GET("/es/_xpack", func(c *gin.Context) {
-		c.JSON(http.StatusOK, v1.NewESXPack(c))
+		c.JSON(http.StatusOK, meta.NewESXPack(c))
 	})
 
 	r.POST("/es/_search", AuthMiddleware, search.SearchDSL)

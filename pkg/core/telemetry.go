@@ -30,7 +30,7 @@ import (
 	"gopkg.in/segmentio/analytics-go.v3"
 
 	"github.com/zinclabs/zinc/pkg/ider"
-	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/meta"
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
 
@@ -105,7 +105,7 @@ func (t *telemetry) initBaseInfo() {
 		t.baseInfo = map[string]interface{}{
 			"os":           runtime.GOOS,
 			"arch":         runtime.GOARCH,
-			"zinc_version": v1.Version,
+			"zinc_version": meta.Version,
 			"time_zone":    zone,
 			"cpu_count":    cpuCount,
 			"total_memory": m.Total / 1024 / 1024,
@@ -126,7 +126,7 @@ func (t *telemetry) Instance() {
 		traits.Set(k, v)
 	}
 
-	v1.SEGMENT_CLIENT.Enqueue(analytics.Identify{
+	meta.SEGMENT_CLIENT.Enqueue(analytics.Identify{
 		UserId: t.getInstanceID(),
 		Traits: traits,
 	})
@@ -154,7 +154,7 @@ func (t *telemetry) Event(event string, data map[string]interface{}) {
 
 func (t *telemetry) runEvents() {
 	for event := range t.events {
-		v1.SEGMENT_CLIENT.Enqueue(event)
+		meta.SEGMENT_CLIENT.Enqueue(event)
 	}
 }
 

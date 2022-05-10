@@ -25,7 +25,7 @@ import (
 	"github.com/goccy/go-json"
 
 	"github.com/zinclabs/zinc/pkg/bluge/directory"
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
+	"github.com/zinclabs/zinc/pkg/meta"
 	"github.com/zinclabs/zinc/pkg/zutils"
 )
 

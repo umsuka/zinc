@@ -24,7 +24,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/rs/zerolog/log"
 
-	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
+	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/analysis"
 )
 
 var systemIndexList = []string{"_index_mapping", "_index_template", "_index", "_metadata", "_users"}

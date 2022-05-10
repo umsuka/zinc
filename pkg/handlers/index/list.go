@@ -21,7 +21,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/zinclabs/zinc/pkg/core"
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 func List(c *gin.Context) {

@@ -26,7 +26,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/rs/zerolog/log"
 
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 // ListTemplates returns all templates

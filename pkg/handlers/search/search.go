@@ -17,43 +17,58 @@ package search
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 
 	"github.com/zinclabs/zinc/pkg/core"
-	v1 "github.com/zinclabs/zinc/pkg/meta/v1"
+	"github.com/zinclabs/zinc/pkg/errors"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
-// Search searches the index for the given http request from end user
-func Search(c *gin.Context) {
+// SearchDSL searches the index for the given http request from end user
+func SearchDSL(c *gin.Context) {
 	indexName := c.Param("target")
-	index, exists := core.GetIndex(indexName)
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "index " + indexName + " does not exists"})
-		return
-	}
 
-	var iQuery v1.ZincQuery
-	if err := c.BindJSON(&iQuery); err != nil {
-		log.Printf("handlers.search.Search: %s", err.Error())
+	query := new(meta.ZincQuery)
+	if err := c.BindJSON(query); err != nil {
+		log.Printf("handlers.search.searchDSL: %s", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := index.Search(&iQuery)
+	storageType := "disk"
+	indexSize := 0.0
+
+	var err error
+	var resp *meta.SearchResponse
+	if indexName == "" || strings.HasSuffix(indexName, "*") {
+		resp, err = core.MultiSearch(indexName, query)
+	} else {
+		index, exists := core.GetIndex(indexName)
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "index " + indexName + " does not exists"})
+			return
+		}
+
+		storageType = index.StorageType
+		indexSize = index.StorageSize
+		resp, err = index.Search(query)
+	}
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		errors.HandleError(c, err)
 		return
 	}
 
 	eventData := make(map[string]interface{})
-	eventData["search_type"] = iQuery.SearchType
-	eventData["search_index_storage"] = index.StorageType
-	eventData["search_index_size_in_mb"] = index.StorageSize
-	eventData["time_taken_to_search_in_ms"] = res.Took
-	eventData["aggregations_count"] = len(iQuery.Aggregations)
+	eventData["search_type"] = "query_dsl"
+	eventData["search_index_storage"] = storageType
+	eventData["search_index_size_in_mb"] = indexSize
+	eventData["time_taken_to_search_in_ms"] = resp.Took
+	eventData["aggregations_count"] = len(query.Aggregations)
 	core.Telemetry.Event("search", eventData)
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, resp)
 }

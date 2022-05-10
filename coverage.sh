@@ -5,10 +5,8 @@ export ZINC_FIRST_ADMIN_PASSWORD=Complexpass#123
 
 go test ./... -race -covermode=atomic -coverprofile=coverage.out
 
-rm -rf ./test/data
-rm -rf ./pkg/handlers/data
-rm -rf ./pkg/core/data
-rm -rf ./pkg/auth/data
+find ./pkg -name data -type dir|xargs rm -fR
+find ./test -name data -type dir|xargs rm -fR
 
 # make sure to set CODECOV_TOKEN env variable before doing this
 # codecov -f coverage.out

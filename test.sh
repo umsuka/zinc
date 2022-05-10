@@ -1,10 +1,5 @@
 #!/bin/bash
 
-rm -fR pkg/auth/data
-rm -fR pkg/core/data
-rm -fR pkg/handlers/data
-rm -fR test/data
-
 export ZINC_FIRST_ADMIN_USER="admin"
 export ZINC_FIRST_ADMIN_PASSWORD="Complexpass#123" 
 
@@ -14,3 +9,6 @@ if [[ $1 == "bench" ]]; then
 else
     go test -v ./... -test.run=$1
 fi
+
+find ./pkg -name data -type dir|xargs rm -fR
+find ./test -name data -type dir|xargs rm -fR

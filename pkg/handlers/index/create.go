@@ -23,9 +23,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/zinclabs/zinc/pkg/core"
-	meta "github.com/zinclabs/zinc/pkg/meta/v2"
-	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/v2/analysis"
-	"github.com/zinclabs/zinc/pkg/uquery/v2/mappings"
+	"github.com/zinclabs/zinc/pkg/meta"
+	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/analysis"
+	"github.com/zinclabs/zinc/pkg/uquery/mappings"
 )
 
 func Create(c *gin.Context) {
