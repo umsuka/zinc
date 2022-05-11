@@ -38,8 +38,8 @@ func DeleteIndex(name string) error {
 		return errors.New("index " + name + " does not exists")
 	}
 
-	// 1. Close the index writer
-	_ = index.Writer.Close()
+	// 1. Close the index
+	_ = index.Close()
 
 	// 2. Delete from the cache
 	delete(ZINC_INDEX_LIST, index.Name)

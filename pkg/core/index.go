@@ -27,7 +27,6 @@ import (
 	"github.com/blugelabs/bluge"
 	"github.com/blugelabs/bluge/analysis"
 	"github.com/goccy/go-json"
-	"github.com/rs/zerolog/log"
 
 	"github.com/zinclabs/zinc/pkg/meta"
 	zincanalysis "github.com/zinclabs/zinc/pkg/uquery/analysis"
@@ -153,29 +152,39 @@ func (index *Index) buildField(mappings *meta.Mappings, bdoc *bluge.Document, ke
 		}
 		field = bluge.NewNumericField(key, v)
 	case "keyword":
-		// compatible verion <= v0.1.4
-		if v, ok := value.(bool); ok {
-			field = bluge.NewKeywordField(key, strconv.FormatBool(v))
-		} else if v, ok := value.(string); ok {
+		switch v := value.(type) {
+		case string:
 			field = bluge.NewKeywordField(key, v)
-		} else {
-			return fmt.Errorf("keyword type only support text")
+		case float64:
+			field = bluge.NewKeywordField(key, strconv.FormatFloat(v, 'f', -1, 64))
+		case int:
+			field = bluge.NewKeywordField(key, strconv.FormatInt(int64(v), 10))
+		case bool:
+			field = bluge.NewKeywordField(key, strconv.FormatBool(v))
+		default:
+			field = bluge.NewKeywordField(key, fmt.Sprintf("%v", v))
 		}
-	case "bool": // found using existing index mapping
+	case "bool":
 		value := value.(bool)
 		field = bluge.NewKeywordField(key, strconv.FormatBool(value))
 	case "time":
-		format := time.RFC3339
-		if mappings.Properties[key].Format != "" {
-			format = mappings.Properties[key].Format
+		switch v := value.(type) {
+		case string:
+			format := time.RFC3339
+			if mappings.Properties[key].Format != "" {
+				format = mappings.Properties[key].Format
+			}
+			tim, err := time.Parse(format, value.(string))
+			if err != nil {
+				return err
+			}
+			field = bluge.NewDateTimeField(key, tim)
+		case float64:
+			if t := zutils.Unix(int64(v)); !t.IsZero() {
+				field = bluge.NewDateTimeField(key, t)
+			}
 		}
-		tim, err := time.Parse(format, value.(string))
-		if err != nil {
-			return err
-		}
-		field = bluge.NewDateTimeField(key, tim)
 	}
-
 	if mappings.Properties[key].Store {
 		field.StoreValue()
 	}
@@ -257,66 +266,6 @@ func (index *Index) SetMappings(mappings *meta.Mappings) error {
 	index.Mappings = nil
 
 	return nil
-}
-
-// DEPRECATED GetStoredMapping returns the mappings of all the indexes from _index_mapping system index
-func (index *Index) GetStoredMapping() (*meta.Mappings, error) {
-	log.Error().Bool("deprecated", true).Msg("GetStoredMapping is deprecated, use index.CachedMappings instead")
-	for _, indexName := range systemIndexList {
-		if index.Name == indexName {
-			return nil, nil
-		}
-	}
-
-	reader, _ := ZINC_SYSTEM_INDEX_LIST["_index_mapping"].Writer.Reader()
-	defer reader.Close()
-
-	// search for the index mapping _index_mapping index
-	query := bluge.NewTermQuery(index.Name).SetField("_id")
-	searchRequest := bluge.NewTopNSearch(1, query) // Should get just 1 result at max
-	dmi, err := reader.Search(context.Background(), searchRequest)
-	if err != nil {
-		log.Error().Str("index", index.Name).Msg("error executing search: " + err.Error())
-		return nil, err
-	}
-
-	next, err := dmi.Next()
-	if err != nil {
-		return nil, err
-	}
-
-	mappings := new(meta.Mappings)
-	oldMappings := make(map[string]string)
-	if next != nil {
-		err = next.VisitStoredFields(func(field string, value []byte) bool {
-			switch field {
-			case "_source":
-				if string(value) != "" {
-					json.Unmarshal(value, mappings)
-				}
-			default:
-				oldMappings[field] = string(value)
-			}
-			return true
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// compatible old mappings format
-	if len(mappings.Properties) == 0 && len(oldMappings) > 0 {
-		mappings.Properties = make(map[string]meta.Property, len(oldMappings))
-		for k, v := range oldMappings {
-			mappings.Properties[k] = meta.NewProperty(v)
-		}
-	}
-
-	if len(mappings.Properties) == 0 {
-		mappings.Properties = make(map[string]meta.Property)
-	}
-
-	return mappings, nil
 }
 
 func (index *Index) LoadDocsCount() (int64, error) {
