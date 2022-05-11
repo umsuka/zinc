@@ -90,12 +90,36 @@ func TestIndex_BuildBlugeDocumentFromJSON(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "timestamp with format",
+			args: args{
+				docID: "2",
+				doc: map[string]interface{}{
+					"id":         "2",
+					"name":       "test1",
+					"age":        10,
+					"length":     3.14,
+					"dev":        true,
+					"@timestamp": time.Now().Format("2006-01-02 15:04:05.000"),
+					"time":       time.Now().Format("2006-01-02 15:04:05.000"),
+				},
+			},
+			init: func() {
+				index.CachedMappings.Properties["time"] = meta.Property{
+					Type:   "time",
+					Index:  true,
+					Format: "2006-01-02 15:04:05.000",
+				}
+			},
+			want:    &bluge.Document{},
+			wantErr: false,
+		},
+		{
 			name: "with analyzer",
 			args: args{
 				docID: "3",
 				doc: map[string]interface{}{
 					"id":     "3",
-					"name":   3,
+					"name":   "test",
 					"age":    "10",
 					"length": 3,
 					"dev":    true,
@@ -111,9 +135,9 @@ func TestIndex_BuildBlugeDocumentFromJSON(t *testing.T) {
 				index.CachedMappings.Properties["name"] = meta.Property{
 					Type:     "text",
 					Index:    true,
-					Analyzer: "default",
+					Analyzer: "analyzer_1",
 				}
-				index.CachedAnalyzers["default"] = analyzer.NewStandardAnalyzer()
+				index.CachedAnalyzers["analyzer_1"] = analyzer.NewStandardAnalyzer()
 			},
 			want:    &bluge.Document{},
 			wantErr: true,
@@ -201,7 +225,9 @@ func TestIndex_BuildBlugeDocumentFromJSON(t *testing.T) {
 		index, err = NewIndex(indexName, "disk", nil)
 		assert.Nil(t, err)
 		assert.NotNil(t, index)
-		StoreIndex(index)
+
+		err = StoreIndex(index)
+		assert.Nil(t, err)
 		index.CachedMappings.Properties["time"] = meta.NewProperty("time")
 	})
 
@@ -227,48 +253,60 @@ func TestIndex_BuildBlugeDocumentFromJSON(t *testing.T) {
 }
 
 func TestIndex_Settings(t *testing.T) {
-	type fields struct {
-		Name                string
-		IndexType           string
-		StorageType         string
-		DocsCount           int64
-		StorageSize         float64
-		StorageSizeNextTime time.Time
-		Mappings            map[string]interface{}
-		Settings            *meta.IndexSettings
-		CachedAnalyzers     map[string]*analysis.Analyzer
-		CachedMappings      *meta.Mappings
-		Writer              *bluge.Writer
-	}
-	type args struct {
-		settings *meta.IndexSettings
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			index := &Index{
-				Name:                tt.fields.Name,
-				IndexType:           tt.fields.IndexType,
-				StorageType:         tt.fields.StorageType,
-				DocsCount:           tt.fields.DocsCount,
-				StorageSize:         tt.fields.StorageSize,
-				StorageSizeNextTime: tt.fields.StorageSizeNextTime,
-				Mappings:            tt.fields.Mappings,
-				Settings:            tt.fields.Settings,
-				CachedAnalyzers:     tt.fields.CachedAnalyzers,
-				CachedMappings:      tt.fields.CachedMappings,
-				Writer:              tt.fields.Writer,
-			}
-			if err := index.SetSettings(tt.args.settings); (err != nil) != tt.wantErr {
-				t.Errorf("Index.SetSettings() error = %v, wantErr %v", err, tt.wantErr)
-			}
+	var index *Index
+	var err error
+	indexName := "TestIndex_Settings.index_1"
+
+	t.Run("prepare", func(t *testing.T) {
+		index, err = NewIndex(indexName, "disk", nil)
+		assert.Nil(t, err)
+		assert.NotNil(t, index)
+
+		err = StoreIndex(index)
+		assert.Nil(t, err)
+
+		index.GainDocsCount(1)
+		index.ReduceDocsCount(1)
+
+		n, err := index.LoadDocsCount()
+		assert.Nil(t, err)
+		assert.Equal(t, int64(0), n)
+
+	})
+
+	t.Run("setting", func(t *testing.T) {
+		err := index.SetSettings(&meta.IndexSettings{
+			NumberOfShards:   1,
+			NumberOfReplicas: 0,
+			Analysis: &meta.IndexAnalysis{
+				Analyzer: map[string]*meta.Analyzer{
+					"default": {
+						Type: "standard",
+					},
+				},
+			},
 		})
-	}
+		assert.Nil(t, err)
+	})
+
+	t.Run("mapping", func(t *testing.T) {
+		err := index.SetMappings(&meta.Mappings{
+			Properties: map[string]meta.Property{
+				"id": meta.NewProperty("keyword"),
+			},
+		})
+		assert.Nil(t, err)
+	})
+
+	t.Run("analyzer", func(t *testing.T) {
+		err := index.SetAnalyzers(map[string]*analysis.Analyzer{
+			"standard": analyzer.NewStandardAnalyzer(),
+		})
+		assert.Nil(t, err)
+	})
+
+	t.Run("cleanup", func(t *testing.T) {
+		err := DeleteIndex(indexName)
+		assert.Nil(t, err)
+	})
 }

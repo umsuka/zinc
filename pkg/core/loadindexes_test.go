@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zinclabs/zinc/pkg/meta"
 )
 
 func TestLoadIndexes(t *testing.T) {
@@ -34,14 +35,36 @@ func TestLoadIndexes(t *testing.T) {
 		assert.Equal(t, "_index_mapping", ZINC_SYSTEM_INDEX_LIST["_index_mapping"].Name)
 	})
 
+	t.Run("create some index", func(t *testing.T) {
+		index, err := NewIndex("TestLoadIndexes.index_1", "disk", nil)
+		assert.Nil(t, err)
+		assert.NotNil(t, index)
+
+		index.SetSettings(&meta.IndexSettings{
+			Analysis: &meta.IndexAnalysis{
+				Analyzer: map[string]*meta.Analyzer{
+					"default": {
+						Type: "standard",
+					},
+				},
+			},
+		})
+		err = StoreIndex(index)
+		assert.Nil(t, err)
+	})
+
 	t.Run("load user index from disk", func(t *testing.T) {
-		// index cann't be reopen, so need close first
 		for _, index := range ZINC_INDEX_LIST {
 			index.Writer.Close()
 		}
 		var err error
 		ZINC_INDEX_LIST, err = LoadZincIndexesFromMeta()
 		assert.Nil(t, err)
-		assert.GreaterOrEqual(t, 0, len(ZINC_INDEX_LIST))
+		assert.GreaterOrEqual(t, len(ZINC_INDEX_LIST), 0)
+	})
+
+	t.Run("cleanup", func(t *testing.T) {
+		err := DeleteIndex("TestLoadIndexes.index_1")
+		assert.Nil(t, err)
 	})
 }
