@@ -200,6 +200,46 @@ func TestIndex_Search(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Search Query - highlight",
+			args: args{
+				iQuery: &meta.ZincQuery{
+					Query: &meta.Query{
+						QueryString: &meta.QueryStringQuery{
+							Query: "angeles",
+						},
+					},
+					Timeout: 1,
+					Fields:  []interface{}{"address.city"},
+					Highlight: &meta.Highlight{
+						Fields: map[string]*meta.Highlight{
+							"address.city": {
+								PreTags:  []string{"<b>"},
+								PostTags: []string{"</b>"},
+							},
+						},
+					},
+				},
+			},
+			data: []map[string]interface{}{
+				{
+					"name": "Prabhat Sharma",
+					"address": map[string]interface{}{
+						"city":  "San Francisco",
+						"state": "California",
+					},
+					"hobby": "chess",
+				},
+				{
+					"name": "Leonardo DiCaprio",
+					"address": map[string]interface{}{
+						"city":  "Los angeles",
+						"state": "California",
+					},
+					"hobby": "chess",
+				},
+			},
+		},
 	}
 
 	indexName := "Search.index_1"
@@ -208,6 +248,16 @@ func TestIndex_Search(t *testing.T) {
 			index, err := NewIndex(indexName, "disk", nil)
 			assert.Nil(t, err)
 			assert.NotNil(t, index)
+
+			if (index.CachedMappings) == nil {
+				index.CachedMappings = meta.NewMappings()
+			}
+			index.CachedMappings.Properties["address.city"] = meta.Property{
+				Type:          "text",
+				Index:         true,
+				Store:         true,
+				Highlightable: true,
+			}
 
 			for _, d := range tt.data {
 				rand.Seed(time.Now().UnixNano())
